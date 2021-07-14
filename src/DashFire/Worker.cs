@@ -26,8 +26,8 @@ namespace DashFire
             var tasks = new List<Task>();
             foreach (var job in JobContext.Instance.Jobs)
             {
-                _logger.LogInformation($"Starting { job.GetType().Name }");
-                tasks.Add(job.StartAsync(cancellationToken));
+                _logger.LogInformation($"Starting { job.JobInstance.JobInformation.Key }");
+                tasks.Add(job.JobInstance.StartAsync(cancellationToken));
             }
             Task.WaitAll(tasks.ToArray(), cancellationToken);
 
@@ -36,9 +36,14 @@ namespace DashFire
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
+            _logger.LogInformation("Starting Jobs ...");
+
             var tasks = new List<Task>();
             foreach (var job in JobContext.Instance.Jobs)
-                tasks.Add(job.ShutdownAsync(cancellationToken));
+            {
+                _logger.LogInformation($"Stopping { job.JobInstance.JobInformation.Key }");
+                tasks.Add(job.JobInstance.ShutdownAsync(cancellationToken));
+            }
             Task.WaitAll(tasks.ToArray(), cancellationToken);
 
             return Task.CompletedTask;

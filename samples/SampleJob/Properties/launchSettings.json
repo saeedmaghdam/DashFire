@@ -3,6 +3,7 @@
     "SampleJob": {
       "commandName": "Project",
       "commandLineArgs": "/service",
+      "applicationUrl": "http://localhost:5000/",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development"
       }

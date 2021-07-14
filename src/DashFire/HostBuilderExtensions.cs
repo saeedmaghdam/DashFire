@@ -12,11 +12,6 @@ namespace DashFire
             {
                 config.AddJsonFile("appsettings.json", optional: true);
                 config.AddEnvironmentVariables();
-
-                //if (args != null)
-                //{
-                //    config.AddCommandLine(args);
-                //}
             }).ConfigureServices((hostContext, services) =>
             {
                 services.AddOptions();

@@ -5,6 +5,11 @@ namespace DashFire
 {
     public interface IJob
     {
+        JobInformation JobInformation
+        {
+            get;
+        }
+
         Task StartAsync(CancellationToken cancellationToken);
 
         Task StopAsync(CancellationToken cancellationToken);

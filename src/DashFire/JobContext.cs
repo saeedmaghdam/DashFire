@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using DashFire.Attributes;
 using Microsoft.Extensions.Logging;
 
 namespace DashFire
@@ -10,10 +11,10 @@ namespace DashFire
         internal static JobContext Instance = new JobContext();
 
         private List<Type> _jobTypes = new List<Type>();
-        private List<IJob> _jobs = new List<IJob>();
+        private List<JobContainer> _jobs = new List<JobContainer>();
         private IServiceProvider _serviceProvider;
 
-        internal IEnumerable<IJob> Jobs => _jobs;
+        internal IEnumerable<JobContainer> Jobs => _jobs;
 
         internal IServiceProvider ServiceProvider => _serviceProvider;
 
@@ -30,8 +31,9 @@ namespace DashFire
 
             foreach (var jobType in _jobTypes)
             {
-                logger.LogInformation($"Initializing { jobType.FullName }");
+                logger.LogInformation($"Initializing { jobType.Name }");
 
+                // Get constructor parameters and inject dependency
                 var constructors = jobType.GetConstructors();
                 var constructor = constructors.Single();
                 var parameters = new List<object>();
@@ -41,8 +43,36 @@ namespace DashFire
                     parameters.Add(service);
                 }
 
+                // Generate job instance
                 var jobInstance = (IJob)Activator.CreateInstance(jobType, parameters.ToArray());
-                _jobs.Add(jobInstance);
+
+                // Generate job parameters
+                var parameterContainers = new List<JobParameterContainer>();
+                var properties = jobType.GetProperties().Where(prop => Attribute.IsDefined(prop, typeof(JobParameterAttribute)));
+                foreach (var property in properties)
+                {
+                    var attributes = property.GetCustomAttributes(typeof(JobParameterAttribute), true);
+                    if (attributes.Any())
+                    {
+                        JobParameterAttribute attribute = (JobParameterAttribute)attributes.Single();
+                        parameterContainers.Add(new JobParameterContainer()
+                        {
+                            ParameterName = property.Name,
+                            DisplayName = attribute.Name != null ? attribute.Name : property.Name,
+                            Description = attribute.Description != null ? attribute.Description : string.Empty,
+                            Type = property.PropertyType
+                        });
+                    }
+                }
+
+                // Create a job container and add to containers list
+                _jobs.Add(new JobContainer()
+                {
+                    Key = jobType.FullName,
+                    JobType = jobType,
+                    JobInstance = jobInstance,
+                    Parameters = parameterContainers
+                });
             }
         }
     }

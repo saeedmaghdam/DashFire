@@ -8,6 +8,11 @@ namespace DashFire
     {
         private readonly ILogger<JobBase> _logger;
 
+        public abstract JobInformation JobInformation
+        {
+            get;
+        }
+
         protected JobBase()
         {
             _logger = (ILogger<JobBase>)JobContext.Instance.ServiceProvider.GetService(typeof(ILogger<JobBase>));
@@ -15,7 +20,7 @@ namespace DashFire
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Job Started.");
+            _logger.LogInformation($"{JobInformation.Key} Started.");
 
             await StartInternallyAsync(cancellationToken);
         }
@@ -24,7 +29,7 @@ namespace DashFire
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Job Stoped!");
+            _logger.LogInformation($"{JobInformation.Key} Stoped!");
 
             await StopInternallyAsync(cancellationToken);
         }
@@ -36,7 +41,7 @@ namespace DashFire
 
         public async Task ShutdownAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Job Shutdown!");
+            _logger.LogInformation($"{JobInformation.Key} Shutdown!");
 
             await ShutdownInternallyAsync(cancellationToken);
         }

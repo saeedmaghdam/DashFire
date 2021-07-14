@@ -10,6 +10,13 @@ namespace SampleJob
     {
         private readonly ILogger<SampleJob2> _logger;
 
+        public override JobInformation JobInformation => new JobInformation()
+        {
+            Key = nameof(SampleJob2),
+            Name = "Sample Job 2",
+            Description = "This is a sample job too and writes to console log."
+        };
+
         public SampleJob2(ILogger<SampleJob2> logger, ILogger<JobBase> jobBsaeLogger)
         {
             _logger = logger;

@@ -1,10 +1,23 @@
-﻿using System;
-namespace DashFire
+﻿namespace DashFire
 {
-    public class JobInformation
+    public sealed class JobInformation
     {
-        public JobInformation()
+        public string Key
         {
+            get;
+            set;
+        }
+
+        public string Name
+        {
+            get;
+            set;
+        }
+
+        public string Description
+        {
+            get;
+            set;
         }
     }
 }

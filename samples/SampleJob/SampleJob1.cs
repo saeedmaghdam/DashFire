@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using DashFire;
+using DashFire.Attributes;
 using Microsoft.Extensions.Logging;
 
 namespace SampleJob
@@ -9,6 +10,27 @@ namespace SampleJob
     public class SampleJob1 : JobBase
     {
         private readonly ILogger<SampleJob1> _logger;
+
+        public override JobInformation JobInformation => new JobInformation()
+        {
+            Key = nameof(SampleJob1),
+            Name = "Sample Job 1",
+            Description = "This is a sample job to test the package functionality."
+        };
+
+        [JobParameter("Start Date", "Start date of calculation")]
+        public DateTime StartDate
+        {
+            get;
+            set;
+        }
+
+        [JobParameter]
+        public int ItemsCount
+        {
+            get;
+            set;
+        }
 
         public SampleJob1(ILogger<SampleJob1> logger, ILogger<JobBase> jobBaseLogger)
         {
