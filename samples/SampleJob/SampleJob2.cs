@@ -10,7 +10,7 @@ namespace SampleJob
     {
         private readonly ILogger<SampleJob2> _logger;
 
-        public SampleJob2(ILogger<SampleJob2> logger, ILogger<JobBase> jobBsaeLogger) : base(jobBsaeLogger)
+        public SampleJob2(ILogger<SampleJob2> logger, ILogger<JobBase> jobBsaeLogger)
         {
             _logger = logger;
         }

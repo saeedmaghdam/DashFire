@@ -11,6 +11,11 @@ namespace DashFire
 
         private List<Type> _jobTypes = new List<Type>();
         private List<IJob> _jobs = new List<IJob>();
+        private IServiceProvider _serviceProvider;
+
+        internal IEnumerable<IJob> Jobs => _jobs;
+
+        internal IServiceProvider ServiceProvider => _serviceProvider;
 
         internal void RegisterJob<T>() where T : IJob
         {
@@ -19,6 +24,8 @@ namespace DashFire
 
         internal void Initialize(IServiceProvider serviceProvider)
         {
+            _serviceProvider = serviceProvider;
+
             var logger = (ILogger<JobContext>)serviceProvider.GetService(typeof(ILogger<JobContext>));
 
             foreach (var jobType in _jobTypes)
@@ -38,7 +45,5 @@ namespace DashFire
                 _jobs.Add(jobInstance);
             }
         }
-
-        internal IEnumerable<IJob> Jobs => _jobs;
     }
 }

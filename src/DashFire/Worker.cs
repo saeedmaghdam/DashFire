@@ -21,7 +21,7 @@ namespace DashFire
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Starting jobs ...");
+            _logger.LogInformation("Starting Jobs ...");
 
             var tasks = new List<Task>();
             foreach (var job in JobContext.Instance.Jobs)

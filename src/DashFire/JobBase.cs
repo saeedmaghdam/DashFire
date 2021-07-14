@@ -8,9 +8,9 @@ namespace DashFire
     {
         private readonly ILogger<JobBase> _logger;
 
-        protected JobBase(ILogger<JobBase> logger)
+        protected JobBase()
         {
-            _logger = logger;
+            _logger = (ILogger<JobBase>)JobContext.Instance.ServiceProvider.GetService(typeof(ILogger<JobBase>));
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
