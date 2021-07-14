@@ -19,7 +19,7 @@ namespace DashFire
             JobContext.Instance.Initialize(serviceProvider);
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Starting Jobs ...");
 
@@ -30,6 +30,8 @@ namespace DashFire
                 tasks.Add(job.StartAsync(cancellationToken));
             }
             Task.WaitAll(tasks.ToArray(), cancellationToken);
+
+            return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
