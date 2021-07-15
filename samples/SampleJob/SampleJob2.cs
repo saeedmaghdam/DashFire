@@ -9,7 +9,12 @@ namespace SampleJob
     {
         private readonly ILogger<SampleJob2> _logger;
 
-        public override JobInformation JobInformation => new JobInformation(nameof(SampleJob2), "Sample Job 2", "This is a sample job too and writes to console log.", new[] { "*/2 * * * *", "*/5 * * * *" });
+        public override JobInformation JobInformation => JobInformationBuilder.CreateInstance()
+            .SetSystemName(nameof(SampleJob2))
+            .SetDisplayName("Sample Job 2")
+            .SetDescription("This is a sample job too and writes to console log.")
+            .SetCronSchedules(new[] { "*/2 * * * *", "*/5 * * * *" })
+            .Build();
 
         public SampleJob2(ILogger<SampleJob2> logger, ILogger<JobBase> jobBsaeLogger)
         {

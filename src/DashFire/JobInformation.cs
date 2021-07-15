@@ -38,70 +38,18 @@
         }
 
         /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="systemName">Job's system name.</param>
-        public JobInformation(string systemName)
-        {
-            SystemName = systemName;
-            DisplayName = systemName;
-            Description = string.Empty;
-            CronSchedules = new string[] { };
-        }
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="systemName">Job's system name.</param>
-        /// <param name="displayName">Job's display name.</param>
-        public JobInformation(string systemName, string displayName)
-        {
-            SystemName = systemName;
-            DisplayName = displayName;
-            Description = string.Empty;
-            CronSchedules = new string[] { };
-        }
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="systemName">Job's system name.</param>
-        /// <param name="displayName">Job's display name.</param>
-        /// <param name="description">Job's description.</param>
-        public JobInformation(string systemName, string displayName, string description)
-        {
-            SystemName = systemName;
-            DisplayName = displayName;
-            Description = description;
-            CronSchedules = new string[] { };
-        }
-
-        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="systemName">Job's system name.</param>
         /// <param name="displayName">Job's display name.</param>
         /// <param name="description">Job's description.</param>
         /// <param name="cronSchedules">Job's cron schedules.</param>
-        public JobInformation(string systemName, string displayName, string description, string[] cronSchedules)
+        internal JobInformation(string systemName, string displayName, string description, string[] cronSchedules)
         {
             SystemName = systemName;
-            DisplayName = displayName;
+            DisplayName = displayName ?? systemName;
             Description = description;
-            CronSchedules = cronSchedules;
-        }
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        /// <param name="systemName">Job's system name.</param>
-        /// <param name="cronSchedules">Job's cron schedules.</param>
-        public JobInformation(string systemName, string[] cronSchedules)
-        {
-            SystemName = systemName;
-            DisplayName = systemName;
-            Description = string.Empty;
-            CronSchedules = cronSchedules;
+            CronSchedules = cronSchedules ?? new string[] { };
         }
     }
 }

@@ -13,6 +13,7 @@
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
   </PropertyGroup>
+  
   <ItemGroup>
     <None Remove="Microsoft.Extensions.Hosting.Abstractions" />
     <None Remove="Microsoft.Extensions.Logging.Abstractions" />

@@ -11,7 +11,11 @@ namespace SampleJob
     {
         private readonly ILogger<SampleJob1> _logger;
 
-        public override JobInformation JobInformation => new JobInformation(nameof(SampleJob1), "Sample Job 1", "This is a sample job to test the package functionality.");
+        public override JobInformation JobInformation => JobInformationBuilder.CreateInstance()
+            .SetSystemName(nameof(SampleJob1))
+            .SetDisplayName("Sample Job 1")
+            .SetDescription("This is a sample job to test the package functionality.")
+            .Build();
 
         [JobParameter("Start Date", "Start date of calculation")]
         public DateTime StartDate
