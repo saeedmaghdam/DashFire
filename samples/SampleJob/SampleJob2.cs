@@ -12,8 +12,8 @@ namespace SampleJob
 
         public override JobInformation JobInformation => new JobInformation()
         {
-            Key = nameof(SampleJob2),
-            Name = "Sample Job 2",
+            SystemName = nameof(SampleJob2),
+            DisplayName = "Sample Job 2",
             Description = "This is a sample job too and writes to console log."
         };
 

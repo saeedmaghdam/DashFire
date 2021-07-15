@@ -1,19 +1,31 @@
 ﻿namespace DashFire
 {
+    /// <summary>
+    /// Job information structure.
+    /// </summary>
     public sealed class JobInformation
     {
-        public string Key
+        /// <summary>
+        /// Job's system name.
+        /// </summary>
+        public string SystemName
         {
             get;
             set;
         }
 
-        public string Name
+        /// <summary>
+        /// Job's display name.
+        /// </summary>
+        public string DisplayName
         {
             get;
             set;
         }
 
+        /// <summary>
+        /// Job's description.
+        /// </summary>
         public string Description
         {
             get;

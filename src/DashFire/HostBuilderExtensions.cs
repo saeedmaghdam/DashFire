@@ -4,9 +4,17 @@ using Microsoft.Extensions.Hosting;
 
 namespace DashFire
 {
+    /// <summary>
+    /// Generic IHostBuilder extensions to use DashFire
+    /// </summary>
     public static class HostBuilderExtensions
     {
-        public static IHostBuilder UseDashService(this IHostBuilder hostBuilder)
+        /// <summary>
+        /// Use DashFire in current program.
+        /// </summary>
+        /// <param name="hostBuilder">IHostBuilder to config to use DashFire</param>
+        /// <returns>Config the IHostBuilder and return it.</returns>
+        public static IHostBuilder UseDashFire(this IHostBuilder hostBuilder)
         {
             hostBuilder.ConfigureAppConfiguration((hostingContext, config) =>
             {

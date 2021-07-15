@@ -6,17 +6,19 @@ using Microsoft.Extensions.Logging;
 
 namespace DashFire
 {
-    public class JobContext
+    /// <summary>
+    /// Job context which contains job type and instances, service provider.
+    /// </summary>
+    internal class JobContext
     {
-        internal static JobContext Instance = new JobContext();
+        public static JobContext Instance = new JobContext();
 
-        private List<Type> _jobTypes = new List<Type>();
-        private List<JobContainer> _jobs = new List<JobContainer>();
-        private IServiceProvider _serviceProvider;
+        private readonly List<Type> _jobTypes = new List<Type>();
+        private readonly List<JobContainer> _jobs = new List<JobContainer>();
 
         internal IEnumerable<JobContainer> Jobs => _jobs;
 
-        internal IServiceProvider ServiceProvider => _serviceProvider;
+        internal IServiceProvider ServiceProvider { get; private set; }
 
         internal void RegisterJob<T>() where T : IJob
         {
@@ -25,7 +27,7 @@ namespace DashFire
 
         internal void Initialize(IServiceProvider serviceProvider)
         {
-            _serviceProvider = serviceProvider;
+            ServiceProvider = serviceProvider;
 
             var logger = (ILogger<JobContext>)serviceProvider.GetService(typeof(ILogger<JobContext>));
 
@@ -58,8 +60,8 @@ namespace DashFire
                         parameterContainers.Add(new JobParameterContainer()
                         {
                             ParameterName = property.Name,
-                            DisplayName = attribute.Name != null ? attribute.Name : property.Name,
-                            Description = attribute.Description != null ? attribute.Description : string.Empty,
+                            DisplayName = attribute.DisplayName ?? property.Name,
+                            Description = attribute.Description ?? string.Empty,
                             Type = property.PropertyType
                         });
                     }
@@ -68,7 +70,7 @@ namespace DashFire
                 // Create a job container and add to containers list
                 _jobs.Add(new JobContainer()
                 {
-                    Key = jobType.FullName,
+                    FullName = jobType.FullName,
                     JobType = jobType,
                     JobInstance = jobInstance,
                     Parameters = parameterContainers

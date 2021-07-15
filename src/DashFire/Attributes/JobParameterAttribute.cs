@@ -2,29 +2,48 @@
 
 namespace DashFire.Attributes
 {
+    /// <summary>
+    /// Job parameter attribute which is used to show the property is a job parameter.
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
     public class JobParameterAttribute : Attribute
     {
-        private string _name;
-        private string _description;
 
-        public string Name => _name;
+        /// <summary>
+        /// Parameter's display name
+        /// </summary>
+        public string DisplayName { get; }
 
-        public string Description => _description;
+        /// <summary>
+        /// Parameter's description.
+        /// </summary>
+        public string Description { get; }
 
+        /// <summary>
+        /// Default constructor.
+        /// </summary>
         public JobParameterAttribute()
         {
         }
 
-        public JobParameterAttribute(string name)
+        /// <summary>
+        /// Constructor to set the display name of the parameter.
+        /// </summary>
+        /// <param name="displayName">Display name</param>
+        public JobParameterAttribute(string displayName)
         {
-            _name = name;
+            DisplayName = displayName;
         }
 
-        public JobParameterAttribute(string name, string description)
+        /// <summary>
+        /// Constructor to set the display name and description of the parameter.
+        /// </summary>
+        /// <param name="displayName">Display name</param>
+        /// <param name="description">Description</param>
+        public JobParameterAttribute(string displayName, string description)
         {
-            _name = name;
-            _description = description;
+            DisplayName = displayName;
+            Description = description;
         }
     }
 }

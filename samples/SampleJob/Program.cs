@@ -17,6 +17,6 @@ namespace SampleJob
                     services.AddJob<SampleJob1>();
                     services.AddJob<SampleJob2>();
                 })
-                .UseDashService();
+                .UseDashFire();
     }
 }
