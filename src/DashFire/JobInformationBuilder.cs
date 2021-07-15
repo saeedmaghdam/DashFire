@@ -9,6 +9,7 @@
         private string _displayName;
         private string _description;
         private string[] _cronSchedules;
+        private bool _registrationRequired;
 
         /// <summary>
         /// Sets a system name for the job.
@@ -59,6 +60,17 @@
         }
 
         /// <summary>
+        /// Inficates whether registration is required or not, if required, then it'll not trigger til job get registered.
+        /// </summary>
+        /// <returns>Job information builder</returns>
+        public JobInformationBuilder RegistrationRequired()
+        {
+            _registrationRequired = true;
+
+            return this;
+        }
+
+        /// <summary>
         /// Creates an instance of JobInformationBuilder
         /// </summary>
         /// <returns></returns>
@@ -76,7 +88,7 @@
             if (string.IsNullOrEmpty(_systemName))
                 throw new System.Exception("System name is required.");
 
-            return new JobInformation(_systemName, _displayName, _description, _cronSchedules);
+            return new JobInformation(_systemName, _displayName, _description, _cronSchedules, _registrationRequired);
         }
     }
 }

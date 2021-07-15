@@ -15,6 +15,7 @@ namespace SampleJob
             .SetSystemName(nameof(SampleJob1))
             .SetDisplayName("Sample Job 1")
             .SetDescription("This is a sample job to test the package functionality.")
+            .RegistrationRequired()
             .Build();
 
         [JobParameter("Start Date", "Start date of calculation")]
