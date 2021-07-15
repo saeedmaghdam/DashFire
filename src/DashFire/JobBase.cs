@@ -1,6 +1,9 @@
-﻿using System.Threading;
+﻿using System;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using NCrontab;
 
 namespace DashFire
 {
@@ -20,6 +23,15 @@ namespace DashFire
         }
 
         /// <summary>
+        /// Job's next execution date and time.
+        /// </summary>
+        public DateTime NextExecutionDateTime
+        {
+            get;
+            private set;
+        }
+
+        /// <summary>
         /// JobBase default constructor.
         /// </summary>
         protected JobBase()
@@ -34,9 +46,31 @@ namespace DashFire
         /// <returns>Returns a task.</returns>
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            _logger.LogInformation($"{JobInformation.SystemName} Started.");
+            do
+            {
+                _logger.LogInformation($"{JobInformation.SystemName} Started.");
 
-            await StartInternallyAsync(cancellationToken);
+                await StartInternallyAsync(cancellationToken);
+
+                if (JobInformation.CronSchedules.Any() && !cancellationToken.IsCancellationRequested)
+                {
+                    var NextExecutionDateTime = DateTime.MaxValue;
+                    foreach (var cronExpression in JobInformation.CronSchedules)
+                    {
+                        var crontabSchedule = CrontabSchedule.Parse(cronExpression);
+                        var nextOccurrence = crontabSchedule.GetNextOccurrence(DateTime.Now, DateTime.MaxValue);
+                        NextExecutionDateTime = NextExecutionDateTime < nextOccurrence ? NextExecutionDateTime : nextOccurrence;
+                    }
+
+                    var sleepTime = NextExecutionDateTime - DateTime.Now;
+                    if (sleepTime.TotalSeconds > 0)
+                    {
+                        _logger.LogInformation($"{JobInformation.SystemName} scheduled to execute at {NextExecutionDateTime}");
+
+                        await Task.Delay(sleepTime, cancellationToken);
+                    }
+                }
+            } while (!cancellationToken.IsCancellationRequested);
         }
 
         /// <summary>

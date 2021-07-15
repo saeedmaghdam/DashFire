@@ -11,12 +11,7 @@ namespace SampleJob
     {
         private readonly ILogger<SampleJob1> _logger;
 
-        public override JobInformation JobInformation => new JobInformation()
-        {
-            SystemName = nameof(SampleJob1),
-            DisplayName = "Sample Job 1",
-            Description = "This is a sample job to test the package functionality."
-        };
+        public override JobInformation JobInformation => new JobInformation(nameof(SampleJob1), "Sample Job 1", "This is a sample job to test the package functionality.");
 
         [JobParameter("Start Date", "Start date of calculation")]
         public DateTime StartDate
@@ -39,12 +34,9 @@ namespace SampleJob
 
         protected override async Task StartInternallyAsync(CancellationToken cancellationToken)
         {
-            do
-            {
-                _logger.LogError("SampleJob1: Processing ...");
+            _logger.LogInformation("SampleJob1: I don't have any schedule and I'll execute til service is on!");
 
-                await Task.Delay(TimeSpan.FromSeconds(1), cancellationToken);
-            } while (!cancellationToken.IsCancellationRequested);
+            await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
         }
     }
 }
