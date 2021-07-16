@@ -33,15 +33,11 @@ namespace DashFire
             var jobInstance = (IJob)Activator.CreateInstance(jobType, parameters.ToArray());
 
             // Sets instance id
-            if (jobInstance.JobInformation.JobInstanceIdRequired)
-            {
-                var configuration = (IConfiguration)serviceProvider.GetService(typeof(IConfiguration));
-                var instanceId = configuration.GetValue<string>($"{jobType.Name}:InstanceId");
-                if (string.IsNullOrEmpty(instanceId))
-                    throw new Exception($"{jobType.FullName} needs instance id which could not found in appsettings.json.");
-
-                (jobInstance as Job).InstanceId = instanceId;
-            }
+            var configuration = (IConfiguration)serviceProvider.GetService(typeof(IConfiguration));
+            var instanceId = configuration.GetValue<string>($"{jobType.Name}:InstanceId");
+            if (string.IsNullOrEmpty(instanceId))
+                throw new Exception($"{jobType.FullName} needs instance id which could not found in appsettings.json.");
+            (jobInstance as Job).InstanceId = instanceId;
 
             // Generate job parameters
             var parameterContainers = new List<JobParameterContainer>();

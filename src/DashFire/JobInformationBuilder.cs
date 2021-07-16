@@ -10,7 +10,6 @@
         private string _description;
         private string[] _cronSchedules;
         private bool _registrationRequired;
-        private bool _jobInstanceIdRequired;
 
         /// <summary>
         /// Sets a system name for the job.
@@ -72,17 +71,6 @@
         }
 
         /// <summary>
-        /// Indicates whether job's instance id is required or not.
-        /// </summary>
-        /// <returns>Job information builder</returns>
-        public JobInformationBuilder JobInstanceIdRequired()
-        {
-            _jobInstanceIdRequired = true;
-
-            return this;
-        }
-
-        /// <summary>
         /// Creates an instance of JobInformationBuilder
         /// </summary>
         /// <returns></returns>
@@ -100,7 +88,7 @@
             if (string.IsNullOrEmpty(_systemName))
                 throw new System.Exception("System name is required.");
 
-            return new JobInformation(_systemName, _displayName, _description, _cronSchedules, _registrationRequired, _jobInstanceIdRequired);
+            return new JobInformation(_systemName, _displayName, _description, _cronSchedules, _registrationRequired);
         }
     }
 }

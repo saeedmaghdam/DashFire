@@ -46,14 +46,6 @@
         }
 
         /// <summary>
-        /// Indicated whether job's instance id is required or not. if required, instance id should be set in appsettings.json.
-        /// </summary>
-        public bool JobInstanceIdRequired
-        {
-            get;
-        }
-
-        /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="systemName">Job's system name.</param>
@@ -61,15 +53,13 @@
         /// <param name="description">Job's description.</param>
         /// <param name="cronSchedules">Job's cron schedules.</param>
         /// <param name="registrationRequired">Indicated whether registration is required or not.</param>
-        /// <param name="jobInstanceIdRequired">Indicated whether job instance is is required or not.</param>
-        internal JobInformation(string systemName, string displayName, string description, string[] cronSchedules, bool registrationRequired, bool jobInstanceIdRequired)
+        internal JobInformation(string systemName, string displayName, string description, string[] cronSchedules, bool registrationRequired)
         {
             SystemName = systemName;
             DisplayName = displayName ?? systemName;
             Description = description;
             CronSchedules = cronSchedules ?? new string[] { };
             RegistrationRequired = registrationRequired;
-            JobInstanceIdRequired = jobInstanceIdRequired;
         }
     }
 }
