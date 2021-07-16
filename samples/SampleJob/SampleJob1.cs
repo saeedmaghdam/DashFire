@@ -16,6 +16,7 @@ namespace DashFire.Service.Sample
             .SetDisplayName("Sample Job 1")
             .SetDescription("This is a sample job to test the package functionality.")
             .RegistrationRequired()
+            .JobInstanceIdRequired()
             .Build();
 
         [JobParameter("Start Date", "Start date of calculation")]

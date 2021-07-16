@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DashFire.Attributes;
+using Microsoft.Extensions.Configuration;
 
 namespace DashFire
 {
@@ -30,6 +31,17 @@ namespace DashFire
 
             // Generate job instance
             var jobInstance = (IJob)Activator.CreateInstance(jobType, parameters.ToArray());
+
+            // Sets instance id
+            if (jobInstance.JobInformation.JobInstanceIdRequired)
+            {
+                var configuration = (IConfiguration)serviceProvider.GetService(typeof(IConfiguration));
+                var instanceId = configuration.GetValue<string>($"{jobType.Name}:InstanceId");
+                if (string.IsNullOrEmpty(instanceId))
+                    throw new Exception($"{jobType.FullName} needs instance id which could not found in appsettings.json.");
+
+                (jobInstance as JobBase).InstanceId = instanceId;
+            }
 
             // Generate job parameters
             var parameterContainers = new List<JobParameterContainer>();

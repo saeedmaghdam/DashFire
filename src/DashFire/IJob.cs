@@ -17,6 +17,14 @@ namespace DashFire
         }
 
         /// <summary>
+        /// Job's instance id.
+        /// </summary>
+        string InstanceId
+        {
+            get;
+        }
+
+        /// <summary>
         /// Starts the job.
         /// </summary>
         /// <param name="cancellationToken">Cancellation token.</param>

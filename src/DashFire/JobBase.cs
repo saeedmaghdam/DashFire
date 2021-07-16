@@ -32,6 +32,15 @@ namespace DashFire
         }
 
         /// <summary>
+        /// Job's instance id.
+        /// </summary>
+        public string InstanceId
+        {
+            get;
+            internal set;
+        }
+
+        /// <summary>
         /// JobBase default constructor.
         /// </summary>
         protected JobBase()
