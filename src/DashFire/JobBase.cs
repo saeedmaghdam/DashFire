@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -66,8 +67,22 @@ namespace DashFire
         {
             do
             {
-                _logger.LogInformation($"{JobInformation.SystemName} Started.");
+                // Register the job
+                var registrationModel = new Models.RegistrationModel()
+                {
+                    Key = Key,
+                    InstanceId = InstanceId,
+                    Parameters = JobContext.Instance.Jobs.Single(x => x.Key == Key).Parameters.Select(x => new Models.JobParameterModel()
+                    {
+                        Description = x.Description,
+                        DisplayName = x.DisplayName,
+                        ParameterName = x.ParameterName,
+                        TypeFullName = x.Type.FullName
+                    }).ToList()
+                };
+                QueueManager.Instance.Publish(JsonSerializer.Serialize(registrationModel));
 
+                _logger.LogInformation($"{JobInformation.SystemName} Started.");
                 await StartInternallyAsync(cancellationToken);
 
                 if (JobInformation.CronSchedules.Any() && !cancellationToken.IsCancellationRequested)

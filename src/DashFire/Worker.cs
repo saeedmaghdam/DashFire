@@ -39,6 +39,9 @@ namespace DashFire
             var tasks = new List<Task>();
             foreach (var job in JobContext.Instance.Jobs)
             {
+                _logger.LogInformation($"Initializing the queue for { job.JobInstance.JobInformation.SystemName }");
+                QueueManager.Instance.Initialize(job.JobInstance.Key, job.JobInstance.InstanceId);
+
                 _logger.LogInformation($"Starting { job.JobInstance.JobInformation.SystemName }");
                 tasks.Add(job.JobInstance.StartAsync(cancellationToken));
             }

@@ -6,9 +6,9 @@
     public class DashOptions
     {
         /// <summary>
-        /// Database connection string.
+        /// RabbitMq connection string.
         /// </summary>
-        public string ConnectionString
+        public string RabbitMqConnectionString
         {
             get;
             set;
