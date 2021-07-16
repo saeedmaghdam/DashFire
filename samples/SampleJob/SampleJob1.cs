@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using DashFire;
 using DashFire.Attributes;
 using Microsoft.Extensions.Logging;
 
 namespace DashFire.Service.Sample
 {
-    public class SampleJob1 : JobBase
+    public class SampleJob1 : Job
     {
         private readonly ILogger<SampleJob1> _logger;
 
@@ -33,7 +32,7 @@ namespace DashFire.Service.Sample
             set;
         }
 
-        public SampleJob1(ILogger<SampleJob1> logger, ILogger<JobBase> jobBaseLogger)
+        public SampleJob1(ILogger<SampleJob1> logger, ILogger<Job> jobBaseLogger)
         {
             _logger = logger;
         }

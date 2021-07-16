@@ -40,7 +40,7 @@ namespace DashFire
                 if (string.IsNullOrEmpty(instanceId))
                     throw new Exception($"{jobType.FullName} needs instance id which could not found in appsettings.json.");
 
-                (jobInstance as JobBase).InstanceId = instanceId;
+                (jobInstance as Job).InstanceId = instanceId;
             }
 
             // Generate job parameters
@@ -63,7 +63,7 @@ namespace DashFire
             }
 
             var jobKey = $"{jobType.FullName}:{jobType.Assembly.GetName().Version}";
-            (jobInstance as JobBase).Key = jobKey;
+            (jobInstance as Job).Key = jobKey;
 
             // Create a job container and return it
             return new JobContainer()

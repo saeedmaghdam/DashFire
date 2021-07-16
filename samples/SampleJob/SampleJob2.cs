@@ -1,11 +1,10 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using DashFire;
 using Microsoft.Extensions.Logging;
 
 namespace DashFire.Service.Sample
 {
-    public class SampleJob2 : JobBase
+    public class SampleJob2 : Job
     {
         private readonly ILogger<SampleJob2> _logger;
 
@@ -16,7 +15,7 @@ namespace DashFire.Service.Sample
             .SetCronSchedules(new[] { "*/2 * * * *", "*/5 * * * *" })
             .Build();
 
-        public SampleJob2(ILogger<SampleJob2> logger, ILogger<JobBase> jobBsaeLogger)
+        public SampleJob2(ILogger<SampleJob2> logger, ILogger<Job> jobBsaeLogger)
         {
             _logger = logger;
         }

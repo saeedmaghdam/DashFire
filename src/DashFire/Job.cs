@@ -11,9 +11,9 @@ namespace DashFire
     /// <summary>
     /// Jobs inherite this class in order to be recognized as a job.
     /// </summary>
-    public abstract class JobBase : IJob
+    public abstract class Job : IJob
     {
-        private readonly ILogger<JobBase> _logger;
+        private readonly ILogger<Job> _logger;
 
         /// <summary>
         /// Contains job's information which will be used in whole system.
@@ -53,9 +53,9 @@ namespace DashFire
         /// <summary>
         /// JobBase default constructor.
         /// </summary>
-        protected JobBase()
+        protected Job()
         {
-            _logger = (ILogger<JobBase>)JobContext.Instance.ServiceProvider.GetService(typeof(ILogger<JobBase>));
+            _logger = (ILogger<Job>)JobContext.Instance.ServiceProvider.GetService(typeof(ILogger<Job>));
         }
 
         /// <summary>
