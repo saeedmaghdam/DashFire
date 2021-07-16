@@ -1,7 +1,7 @@
 ﻿using DashFire;
 using Microsoft.Extensions.Hosting;
 
-namespace SampleJob
+namespace DashFire.Service.Sample
 {
     public class Program
     {

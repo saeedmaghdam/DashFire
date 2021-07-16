@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using DashFire;
 using Microsoft.Extensions.Logging;
 
-namespace SampleJob
+namespace DashFire.Service.Sample
 {
     public class SampleJob2 : JobBase
     {

@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F0C3C09F-043
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{FB6AF5EC-E8E3-4D08-9702-62397AA6C8C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleJob", "samples\SampleJob\SampleJob.csproj", "{33C74BBF-5810-4AD0-9D2C-7607830ABA89}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DashFire.Service.Sample", "samples\SampleJob\DashFire.Service.Sample.csproj", "{33C74BBF-5810-4AD0-9D2C-7607830ABA89}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A878669B-29EF-44F6-A56D-F996E82EB48B}"
 	ProjectSection(SolutionItems) = preProject

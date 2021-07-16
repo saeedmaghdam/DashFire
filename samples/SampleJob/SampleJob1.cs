@@ -5,7 +5,7 @@ using DashFire;
 using DashFire.Attributes;
 using Microsoft.Extensions.Logging;
 
-namespace SampleJob
+namespace DashFire.Service.Sample
 {
     public class SampleJob1 : JobBase
     {
