@@ -1,6 +1,6 @@
 ﻿namespace DashFire.Constants
 {
-    internal enum DashboardExchangeMessageTypes
+    internal enum MessageTypes
     {
         Registration
     }
