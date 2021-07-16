@@ -80,7 +80,7 @@ namespace DashFire
                         TypeFullName = x.Type.FullName
                     }).ToList()
                 };
-                QueueManager.Instance.Publish(JsonSerializer.Serialize(registrationModel));
+                QueueManager.Instance.Publish(Constants.DashboardExchangeMessageTypes.Registration, JsonSerializer.Serialize(registrationModel));
 
                 _logger.LogInformation($"{JobInformation.SystemName} Started.");
                 await StartInternallyAsync(cancellationToken);

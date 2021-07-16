@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using DashFire.Constants;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 
@@ -31,14 +32,23 @@ namespace DashFire
 
         internal void Initialize(string jobKey, string jobInstanceId)
         {
+            // Declare dashboard exchanges and queue
             _channel.ExchangeDeclare(_serviceSideExchangeName, "headers", true);
-            _channel.QueueDeclare(queue: _serviceSideQueueName,
+
+            var serviceSideQueueName = $"{_serviceSideQueueName}_{DashboardExchangeMessageTypes.Registration}";
+            _channel.QueueDeclare(queue: serviceSideQueueName,
                                      durable: true,
                                      exclusive: false,
                                      autoDelete: false,
                                      arguments: null);
-            _channel.QueueBind(_serviceSideQueueName, _serviceSideExchangeName, string.Empty);
+            _channel.QueueBind(serviceSideQueueName, _serviceSideExchangeName, string.Empty, new Dictionary<string, object>()
+            {
+                {
+                    "message_type", DashboardExchangeMessageTypes.Registration.ToString().ToLower()
+                }
+            });
 
+            // Declare dashboard exchanges and queue
             var dashboardSideQueueName = $"{_dashboardSideExchangeName}_{jobKey}_{jobInstanceId}";
             _channel.ExchangeDeclare(_dashboardSideExchangeName, "headers", true);
             _channel.QueueDeclare(queue: dashboardSideQueueName,
@@ -57,10 +67,18 @@ namespace DashFire
             });
         }
 
-        internal void Publish(string message)
+        internal void Publish(DashboardExchangeMessageTypes messageType, string message)
         {
+            var properties = _channel.CreateBasicProperties();
+            properties.Persistent = false;
+            properties.Headers = new Dictionary<string, object>()
+            {
+                {
+                    "message_type", messageType.ToString().ToLower()
+                }
+            };
             var messageBodyBytes = Encoding.UTF8.GetBytes(message);
-            _channel.BasicPublish(_serviceSideExchangeName, "", null, messageBodyBytes);
+            _channel.BasicPublish(_serviceSideExchangeName, "", properties, messageBodyBytes);
         }
     }
 }
