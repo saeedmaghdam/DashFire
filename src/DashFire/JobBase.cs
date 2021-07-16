@@ -23,6 +23,15 @@ namespace DashFire
         }
 
         /// <summary>
+        /// Full name of the job.
+        /// </summary>
+        public string Key
+        {
+            get;
+            internal set;
+        }
+
+        /// <summary>
         /// Job's next execution date and time.
         /// </summary>
         public DateTime NextExecutionDateTime

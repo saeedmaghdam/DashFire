@@ -17,6 +17,14 @@ namespace DashFire
         }
 
         /// <summary>
+        /// Full name of the job.
+        /// </summary>
+        string Key
+        {
+            get;
+        }
+
+        /// <summary>
         /// Job's instance id.
         /// </summary>
         string InstanceId

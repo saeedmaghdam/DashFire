@@ -62,10 +62,13 @@ namespace DashFire
                 }
             }
 
+            var jobKey = $"{jobType.FullName}:{jobType.Assembly.GetName().Version}";
+            (jobInstance as JobBase).Key = jobKey;
+
             // Create a job container and return it
             return new JobContainer()
             {
-                Key = $"{jobType.FullName}:{jobType.Assembly.GetName().Version}",
+                Key = jobKey,
                 JobType = jobType,
                 JobInstance = jobInstance,
                 Parameters = parameterContainers
