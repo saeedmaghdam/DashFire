@@ -35,46 +35,8 @@ namespace DashFire
             {
                 logger.LogInformation($"Initializing { jobType.Name }");
 
-                // Get constructor parameters and inject dependency
-                var constructors = jobType.GetConstructors();
-                var constructor = constructors.Single();
-                var parameters = new List<object>();
-                foreach (var param in constructor.GetParameters())
-                {
-                    var service = serviceProvider.GetService(param.ParameterType);
-                    parameters.Add(service);
-                }
-
-                // Generate job instance
-                var jobInstance = (IJob)Activator.CreateInstance(jobType, parameters.ToArray());
-
-                // Generate job parameters
-                var parameterContainers = new List<JobParameterContainer>();
-                var properties = jobType.GetProperties().Where(prop => Attribute.IsDefined(prop, typeof(JobParameterAttribute)));
-                foreach (var property in properties)
-                {
-                    var attributes = property.GetCustomAttributes(typeof(JobParameterAttribute), true);
-                    if (attributes.Any())
-                    {
-                        JobParameterAttribute attribute = (JobParameterAttribute)attributes.Single();
-                        parameterContainers.Add(new JobParameterContainer()
-                        {
-                            ParameterName = property.Name,
-                            DisplayName = attribute.DisplayName ?? property.Name,
-                            Description = attribute.Description ?? string.Empty,
-                            Type = property.PropertyType
-                        });
-                    }
-                }
-
                 // Create a job container and add to containers list
-                _jobs.Add(new JobContainer()
-                {
-                    FullName = jobType.FullName,
-                    JobType = jobType,
-                    JobInstance = jobInstance,
-                    Parameters = parameterContainers
-                });
+                _jobs.Add(JobContainerHelper.BuildContainer(jobType, serviceProvider));
             }
         }
     }

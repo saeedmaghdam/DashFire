@@ -11,7 +11,7 @@ namespace DashFire
         /// <summary>
         /// Full name of the job.
         /// </summary>
-        public string FullName
+        public string Key
         {
             get;
             set;
