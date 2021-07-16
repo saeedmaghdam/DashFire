@@ -32,21 +32,21 @@ namespace DashFire
         }
 
         /// <summary>
-        /// Job's next execution date and time.
-        /// </summary>
-        public DateTime NextExecutionDateTime
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
         /// Job's instance id.
         /// </summary>
         public string InstanceId
         {
             get;
             internal set;
+        }
+
+        /// <summary>
+        /// Job's next execution date and time.
+        /// </summary>
+        public DateTime NextExecutionDateTime
+        {
+            get;
+            private set;
         }
 
         /// <summary>
