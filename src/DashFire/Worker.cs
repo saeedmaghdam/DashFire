@@ -13,15 +13,18 @@ namespace DashFire
     public class Worker : IHostedService
     {
         private readonly ILogger<Worker> _logger;
+        private readonly QueueManager _queueManager;
 
         /// <summary>
         /// Default constructor.
         /// </summary>
-        /// <param name="logger"></param>
-        /// <param name="serviceProvider"></param>
-        public Worker(ILogger<Worker> logger, IServiceProvider serviceProvider)
+        /// <param name="logger">Logger</param>
+        /// <param name="serviceProvider">Service provider</param>
+        /// <param name="queueManager">Queue manager</param>
+        public Worker(ILogger<Worker> logger, IServiceProvider serviceProvider, QueueManager queueManager)
         {
             _logger = logger;
+            _queueManager = queueManager;
 
             _logger.LogInformation("");
             JobContext.Instance.Initialize(serviceProvider);
@@ -40,7 +43,7 @@ namespace DashFire
             foreach (var job in JobContext.Instance.Jobs)
             {
                 _logger.LogInformation($"Initializing the queue for { job.JobInstance.JobInformation.SystemName }");
-                QueueManager.Instance.Initialize(job.JobInstance.Key, job.JobInstance.InstanceId);
+                _queueManager.Initialize(job.JobInstance.Key, job.JobInstance.InstanceId);
 
                 _logger.LogInformation($"Starting { job.JobInstance.JobInformation.SystemName }");
                 tasks.Add(job.JobInstance.StartAsync(cancellationToken));

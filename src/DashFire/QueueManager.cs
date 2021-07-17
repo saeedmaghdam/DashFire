@@ -7,7 +7,10 @@ using RabbitMQ.Client;
 
 namespace DashFire
 {
-    internal class QueueManager
+    /// <summary>
+    /// Queue manager
+    /// </summary>
+    public class QueueManager
     {
         private readonly IOptions<DashOptions> _options;
 
@@ -19,9 +22,11 @@ namespace DashFire
 
         private const string _dashboardSideExchangeName = "DashFire.Service";
 
-        internal static QueueManager Instance = new QueueManager(JobContext.Instance.ServiceProvider);
-
-        internal QueueManager(IServiceProvider serviceProvider)
+        /// <summary>
+        /// Queue manager constructor.
+        /// </summary>
+        /// <param name="serviceProvider">Service provider.</param>
+        public QueueManager(IServiceProvider serviceProvider)
         {
             _options = (IOptions<DashOptions>)serviceProvider.GetService(typeof(IOptions<DashOptions>));
 

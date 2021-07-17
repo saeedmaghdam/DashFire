@@ -14,6 +14,7 @@ namespace DashFire
     public abstract class Job : IJob
     {
         private readonly ILogger<Job> _logger;
+        private readonly QueueManager _queueManager;
 
         /// <summary>
         /// Contains job's information which will be used in whole system.
@@ -56,6 +57,7 @@ namespace DashFire
         protected Job()
         {
             _logger = (ILogger<Job>)JobContext.Instance.ServiceProvider.GetService(typeof(ILogger<Job>));
+            _queueManager = (QueueManager)JobContext.Instance.ServiceProvider.GetService(typeof(QueueManager));
         }
 
         /// <summary>
@@ -80,7 +82,7 @@ namespace DashFire
                         TypeFullName = x.Type.FullName
                     }).ToList()
                 };
-                QueueManager.Instance.Publish(Constants.MessageTypes.Registration, JsonSerializer.Serialize(registrationModel));
+                _queueManager.Publish(Constants.MessageTypes.Registration, JsonSerializer.Serialize(registrationModel));
 
                 _logger.LogInformation($"{JobInformation.SystemName} Started.");
                 await StartInternallyAsync(cancellationToken);
