@@ -28,7 +28,7 @@ namespace DashFire
 
             _logger.LogInformation("");
             JobContext.Instance.Initialize(serviceProvider);
-            
+
             _queueManager.Received += _queueManager_Received;
         }
 
@@ -51,7 +51,26 @@ namespace DashFire
                 _logger.LogInformation($"Starting { job.JobInstance.JobInformation.SystemName }");
                 tasks.Add(job.JobInstance.StartAsync(cancellationToken));
             }
-            Task.WaitAll(tasks.ToArray(), cancellationToken);
+
+            try
+            {
+                Task.WaitAll(tasks.ToArray(), cancellationToken);
+            }
+            catch (OperationCanceledException ex)
+            {
+                _logger.LogError("A cancellation signal has been thrown from the service.");
+            }
+            catch (AggregateException exs)
+            {
+                foreach (var exception in exs.InnerExceptions)
+                {
+                    _logger.LogError(exception.Message);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+            }
 
             return Task.CompletedTask;
         }
