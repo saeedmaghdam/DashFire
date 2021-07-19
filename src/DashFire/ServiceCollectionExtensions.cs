@@ -15,7 +15,7 @@ namespace DashFire
         /// <returns>Configures the IServiceCollection and return it.</returns>
         public static IServiceCollection AddJob<T>(this IServiceCollection services) where T : IJob
         {
-            JobContext.Instance.RegisterJob<T>();
+            Context.Instance.RegisterJob<T>();
 
             return services;
         }

@@ -13,6 +13,7 @@ namespace DashFire.Service.Sample
             .SetDisplayName("Sample Job 2")
             .SetDescription("This is a sample job too and writes to console log.")
             .SetCronSchedules(new[] { "*/2 * * * *", "*/5 * * * *" })
+            .RegistrationRequired()
             .Build();
 
         public SampleJob2(ILogger<SampleJob2> logger, ILogger<Job> jobBsaeLogger)

@@ -28,6 +28,7 @@ namespace DashFire
                 services.Configure<DashOptions>(options => hostContext.Configuration.GetSection("DashOptions").Bind(options));
 
                 services.AddSingleton<QueueManager>();
+                services.AddSingleton<JobContext>();
 
                 services.AddHostedService<Worker>();
             });

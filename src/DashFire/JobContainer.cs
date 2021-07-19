@@ -36,6 +36,15 @@ namespace DashFire
         }
 
         /// <summary>
+        /// Job execution type
+        /// </summary>
+        internal Constants.JobExecutionType ExecutionType
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// Parameters list including parameter name, display name, description and parameter type.
         /// </summary>
         public List<JobParameterContainer> Parameters
