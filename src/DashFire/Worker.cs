@@ -14,22 +14,25 @@ namespace DashFire
     {
         private readonly ILogger<Worker> _logger;
         private readonly QueueManager _queueManager;
+        private readonly JobContext _jobContext;
 
         /// <summary>
         /// Default constructor.
         /// </summary>
-        /// <param name="logger">Logger</param>
-        /// <param name="serviceProvider">Service provider</param>
-        /// <param name="queueManager">Queue manager</param>
-        public Worker(ILogger<Worker> logger, IServiceProvider serviceProvider, QueueManager queueManager)
+        /// <param name="logger">Logger instance.</param>
+        /// <param name="serviceProvider">Service provider.</param>
+        /// <param name="queueManager">Queue manager.</param>
+        /// <param name="jobContext">Job's context.</param>
+        public Worker(ILogger<Worker> logger, IServiceProvider serviceProvider, QueueManager queueManager, JobContext jobContext)
         {
             _logger = logger;
             _queueManager = queueManager;
 
             _logger.LogInformation("");
-            JobContext.Instance.Initialize(serviceProvider);
+            Context.Instance.Initialize(serviceProvider);
 
             _queueManager.Received += _queueManager_Received;
+            _jobContext = jobContext;
         }
 
         /// <summary>
@@ -42,7 +45,7 @@ namespace DashFire
             _logger.LogInformation("Starting Jobs ...");
 
             var tasks = new List<Task>();
-            foreach (var job in JobContext.Instance.Jobs)
+            foreach (var job in _jobContext.ServiceJobs)
             {
                 _logger.LogInformation($"Initializing the queue for { job.JobInstance.JobInformation.SystemName }");
                 _queueManager.Initialize(job.JobInstance.Key, job.JobInstance.InstanceId);
@@ -85,7 +88,7 @@ namespace DashFire
             _logger.LogInformation("Starting Jobs ...");
 
             var tasks = new List<Task>();
-            foreach (var job in JobContext.Instance.Jobs)
+            foreach (var job in _jobContext.ServiceJobs)
             {
                 _logger.LogInformation($"Stopping { job.JobInstance.JobInformation.SystemName }");
                 tasks.Add(job.JobInstance.ShutdownAsync(cancellationToken));

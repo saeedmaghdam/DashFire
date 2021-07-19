@@ -1,43 +1,46 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DashFire.Attributes;
 using Microsoft.Extensions.Logging;
 
 namespace DashFire
 {
     /// <summary>
-    /// Job context which contains job type and instances, service provider.
+    /// Job's context.
     /// </summary>
-    internal class JobContext
+    public class JobContext
     {
-        public static JobContext Instance = new JobContext();
+        private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<JobContext> _logger;
 
-        private readonly List<Type> _jobTypes = new List<Type>();
         private readonly List<JobContainer> _jobs = new List<JobContainer>();
 
         internal IEnumerable<JobContainer> Jobs => _jobs;
 
-        internal IServiceProvider ServiceProvider { get; private set; }
+        internal IEnumerable<JobContainer> ServiceJobs => _jobs.Where(x => x.ExecutionType == Constants.JobExecutionType.Service);
 
-        internal void RegisterJob<T>() where T : IJob
+        internal IEnumerable<JobContainer> RemoteJobs => _jobs.Where(x => x.ExecutionType == Constants.JobExecutionType.Remote);
+
+        /// <summary>
+        /// Job context's constructor.
+        /// </summary>
+        /// <param name="serviceProvider">Service provider.</param>
+        /// <param name="logger">Logger instance.</param>
+        public JobContext(IServiceProvider serviceProvider, ILogger<JobContext> logger)
         {
-            _jobTypes.Add(typeof(T));
+            _serviceProvider = serviceProvider;
+            _logger = logger;
         }
 
-        internal void Initialize(IServiceProvider serviceProvider)
+        /// <summary>
+        /// Register a new job in job context.
+        /// </summary>
+        /// <param name="jobType">Job's type.</param>
+        internal void Register(Type jobType)
         {
-            ServiceProvider = serviceProvider;
+            _logger.LogInformation($"Initializing { jobType.Name }");
 
-            var logger = (ILogger<JobContext>)serviceProvider.GetService(typeof(ILogger<JobContext>));
-
-            foreach (var jobType in _jobTypes)
-            {
-                logger.LogInformation($"Initializing { jobType.Name }");
-
-                // Create a job container and add to containers list
-                _jobs.Add(JobContainerHelper.BuildContainer(jobType, serviceProvider));
-            }
+            _jobs.Add(JobContainerHelper.BuildContainer(jobType, Constants.JobExecutionType.Service, _serviceProvider));
         }
     }
 }

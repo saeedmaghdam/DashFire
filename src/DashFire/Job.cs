@@ -15,6 +15,10 @@ namespace DashFire
     {
         private readonly ILogger<Job> _logger;
         private readonly QueueManager _queueManager;
+        private readonly JobContext _jobContext;
+        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+
+        private Constants.JobRegistrationStatus _registrationStatus = Constants.JobRegistrationStatus.New;
 
         /// <summary>
         /// Contains job's information which will be used in whole system.
@@ -56,8 +60,9 @@ namespace DashFire
         /// </summary>
         protected Job()
         {
-            _logger = (ILogger<Job>)JobContext.Instance.ServiceProvider.GetService(typeof(ILogger<Job>));
-            _queueManager = (QueueManager)JobContext.Instance.ServiceProvider.GetService(typeof(QueueManager));
+            _logger = (ILogger<Job>)Context.Instance.ServiceProvider.GetService(typeof(ILogger<Job>));
+            _queueManager = (QueueManager)Context.Instance.ServiceProvider.GetService(typeof(QueueManager));
+            _jobContext = (JobContext)Context.Instance.ServiceProvider.GetService(typeof(JobContext));
         }
 
         /// <summary>
@@ -70,19 +75,45 @@ namespace DashFire
             do
             {
                 // Register the job
-                var registrationModel = new Models.RegistrationModel()
+                if (_registrationStatus == Constants.JobRegistrationStatus.New)
                 {
-                    Key = Key,
-                    InstanceId = InstanceId,
-                    Parameters = JobContext.Instance.Jobs.Single(x => x.Key == Key).Parameters.Select(x => new Models.JobParameterModel()
+                    var registrationModel = new Models.RegistrationModel()
                     {
-                        Description = x.Description,
-                        DisplayName = x.DisplayName,
-                        ParameterName = x.ParameterName,
-                        TypeFullName = x.Type.FullName
-                    }).ToList()
-                };
-                _queueManager.Publish(Constants.MessageTypes.Registration, JsonSerializer.Serialize(registrationModel));
+                        Key = Key,
+                        InstanceId = InstanceId,
+                        Parameters = _jobContext.ServiceJobs.Single(x => x.Key == Key).Parameters.Select(x => new Models.JobParameterModel()
+                        {
+                            Description = x.Description,
+                            DisplayName = x.DisplayName,
+                            ParameterName = x.ParameterName,
+                            TypeFullName = x.Type.FullName
+                        }).ToList()
+                    };
+                    _registrationStatus = Constants.JobRegistrationStatus.Registering;
+                    _cancellationTokenSource = new CancellationTokenSource();
+                    _queueManager.Received += _queueManager_Received;
+                    _queueManager.StartConsume(Key, InstanceId);
+
+                    _logger.LogInformation($"Registering job {JobInformation.SystemName} ...");
+
+                    _queueManager.Publish(Constants.MessageTypes.Registration, JsonSerializer.Serialize(registrationModel));
+                }
+
+                if (JobInformation.RegistrationRequired && _registrationStatus == Constants.JobRegistrationStatus.Registering)
+                {
+                    _logger.LogInformation($"Registeration is required for job {JobInformation.SystemName}");
+
+                    do
+                    {
+                        try
+                        {
+                            _logger.LogInformation($"Job {JobInformation.SystemName} is waiting for the registration response.");
+
+                            await Task.Delay(int.MaxValue, _cancellationTokenSource.Token);
+                        }
+                        catch { }
+                    } while (!_cancellationTokenSource.IsCancellationRequested);
+                }
 
                 _logger.LogInformation($"{JobInformation.SystemName} Started.");
                 await StartInternallyAsync(cancellationToken);
@@ -156,6 +187,19 @@ namespace DashFire
         /// <returns>Returns a task.</returns>
         protected virtual Task ShutdownInternallyAsync(CancellationToken cancellationToken)
         {
+            return Task.CompletedTask;
+        }
+
+        private Task _queueManager_Received(string jobKey, string jobInstanceId, string messageType, string message)
+        {
+            if (jobKey == Key && jobInstanceId == InstanceId && messageType == Constants.MessageTypes.Registration.ToString().ToLower())
+            {
+                _logger.LogInformation($"Job {JobInformation.SystemName} registered successfully.");
+
+                _registrationStatus = Constants.JobRegistrationStatus.Registered;
+                _cancellationTokenSource.Cancel();
+            }
+
             return Task.CompletedTask;
         }
     }

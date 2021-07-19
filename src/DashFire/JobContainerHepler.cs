@@ -15,9 +15,10 @@ namespace DashFire
         /// Create a job container contains job key, job type, job instance, job parameters and etc.
         /// </summary>
         /// <param name="jobType">Job's type.</param>
+        /// <param name="executionType">Job's execution type.</param>
         /// <param name="serviceProvider">Service provider.</param>
         /// <returns>Returns a job container.</returns>
-        internal static JobContainer BuildContainer(Type jobType, IServiceProvider serviceProvider)
+        internal static JobContainer BuildContainer(Type jobType, Constants.JobExecutionType executionType, IServiceProvider serviceProvider)
         {
             // Get constructor parameters and inject dependency
             var constructors = jobType.GetConstructors();
@@ -67,7 +68,8 @@ namespace DashFire
                 Key = jobKey,
                 JobType = jobType,
                 JobInstance = jobInstance,
-                Parameters = parameterContainers
+                Parameters = parameterContainers,
+                
             };
         }
     }
