@@ -72,70 +72,19 @@ namespace DashFire
         /// <returns>Returns a task.</returns>
         internal async Task StartAsync(CancellationToken cancellationToken)
         {
+            _queueManager.Received += _queueManager_Received;
+            _queueManager.StartConsume(Key, InstanceId);
+
             do
             {
                 // Register the job
-                if (_registrationStatus == Constants.JobRegistrationStatus.New)
-                {
-                    var registrationModel = new Models.RegistrationModel()
-                    {
-                        Key = Key,
-                        InstanceId = InstanceId,
-                        Parameters = _jobContext.ServiceJobs.Single(x => x.Key == Key).Parameters.Select(x => new Models.JobParameterModel()
-                        {
-                            Description = x.Description,
-                            DisplayName = x.DisplayName,
-                            ParameterName = x.ParameterName,
-                            TypeFullName = x.Type.FullName
-                        }).ToList()
-                    };
-                    _registrationStatus = Constants.JobRegistrationStatus.Registering;
-                    _cancellationTokenSource = new CancellationTokenSource();
-                    _queueManager.Received += _queueManager_Received;
-                    _queueManager.StartConsume(Key, InstanceId);
-
-                    _logger.LogInformation($"Registering job {JobInformation.SystemName} ...");
-
-                    _queueManager.Publish(Constants.MessageTypes.Registration, JsonSerializer.Serialize(registrationModel));
-                }
-
-                if (JobInformation.RegistrationRequired && _registrationStatus == Constants.JobRegistrationStatus.Registering)
-                {
-                    _logger.LogInformation($"Registeration is required for job {JobInformation.SystemName}");
-
-                    do
-                    {
-                        try
-                        {
-                            _logger.LogInformation($"Job {JobInformation.SystemName} is waiting for the registration response.");
-
-                            await Task.Delay(int.MaxValue, _cancellationTokenSource.Token);
-                        }
-                        catch { }
-                    } while (!_cancellationTokenSource.IsCancellationRequested);
-                }
+                await RegisterJobAsync();
 
                 _logger.LogInformation($"{JobInformation.SystemName} Started.");
                 await StartInternallyAsync(cancellationToken);
+                _logger.LogInformation($"{JobInformation.SystemName} Finished.");
 
-                if (JobInformation.CronSchedules.Any() && !cancellationToken.IsCancellationRequested)
-                {
-                    var NextExecutionDateTime = DateTime.MaxValue;
-                    foreach (var cronExpression in JobInformation.CronSchedules)
-                    {
-                        var crontabSchedule = CrontabSchedule.Parse(cronExpression);
-                        var nextOccurrence = crontabSchedule.GetNextOccurrence(DateTime.Now, DateTime.MaxValue);
-                        NextExecutionDateTime = NextExecutionDateTime < nextOccurrence ? NextExecutionDateTime : nextOccurrence;
-                    }
-
-                    var sleepTime = NextExecutionDateTime - DateTime.Now;
-                    if (sleepTime.TotalSeconds > 0)
-                    {
-                        _logger.LogInformation($"{JobInformation.SystemName} scheduled to execute at {NextExecutionDateTime}");
-
-                        await Task.Delay(sleepTime, cancellationToken);
-                    }
-                }
+                await ScheduleAsync(cancellationToken);
             } while (!cancellationToken.IsCancellationRequested);
         }
 
@@ -190,6 +139,44 @@ namespace DashFire
             return Task.CompletedTask;
         }
 
+        private async Task RegisterJobAsync()
+        {
+            if (_registrationStatus == Constants.JobRegistrationStatus.Registered)
+                return;
+
+            var registrationModel = new Models.RegistrationModel()
+            {
+                Key = Key,
+                InstanceId = InstanceId,
+                Parameters = _jobContext.ServiceJobs.Single(x => x.Key == Key).Parameters.Select(x => new Models.JobParameterModel()
+                {
+                    Description = x.Description,
+                    DisplayName = x.DisplayName,
+                    ParameterName = x.ParameterName,
+                    TypeFullName = x.Type.FullName
+                }).ToList()
+            };
+            _registrationStatus = Constants.JobRegistrationStatus.Registering;
+            _cancellationTokenSource = new CancellationTokenSource();
+
+            _logger.LogInformation($"Registering job {JobInformation.SystemName} ...");
+
+            _queueManager.Publish(Constants.MessageTypes.Registration, JsonSerializer.Serialize(registrationModel));
+
+            _logger.LogInformation($"Registeration is required for job {JobInformation.SystemName}");
+
+            do
+            {
+                try
+                {
+                    _logger.LogInformation($"Job {JobInformation.SystemName} is waiting for the registration response.");
+
+                    await Task.Delay(int.MaxValue, _cancellationTokenSource.Token);
+                }
+                catch { }
+            } while (!_cancellationTokenSource.IsCancellationRequested);
+        }
+
         private Task _queueManager_Received(string jobKey, string jobInstanceId, string messageType, string message)
         {
             if (jobKey == Key && jobInstanceId == InstanceId && messageType == Constants.MessageTypes.Registration.ToString().ToLower())
@@ -201,6 +188,28 @@ namespace DashFire
             }
 
             return Task.CompletedTask;
+        }
+
+        private async Task ScheduleAsync(CancellationToken cancellationToken)
+        {
+            if (JobInformation.CronSchedules.Any() && !cancellationToken.IsCancellationRequested)
+            {
+                var NextExecutionDateTime = DateTime.MaxValue;
+                foreach (var cronExpression in JobInformation.CronSchedules)
+                {
+                    var crontabSchedule = CrontabSchedule.Parse(cronExpression);
+                    var nextOccurrence = crontabSchedule.GetNextOccurrence(DateTime.Now, DateTime.MaxValue);
+                    NextExecutionDateTime = NextExecutionDateTime < nextOccurrence ? NextExecutionDateTime : nextOccurrence;
+                }
+
+                var sleepTime = NextExecutionDateTime - DateTime.Now;
+                if (sleepTime.TotalSeconds > 0)
+                {
+                    _logger.LogInformation($"{JobInformation.SystemName} scheduled to execute at {NextExecutionDateTime}");
+
+                    await Task.Delay(sleepTime, cancellationToken);
+                }
+            }
         }
     }
 }
