@@ -8,7 +8,7 @@
         /// <summary>
         /// Job's system name.
         /// </summary>
-        public string SystemName
+        internal string SystemName
         {
             get;
         }
@@ -16,7 +16,7 @@
         /// <summary>
         /// Job's display name.
         /// </summary>
-        public string DisplayName
+        internal string DisplayName
         {
             get;
         }
@@ -24,7 +24,7 @@
         /// <summary>
         /// Job's description.
         /// </summary>
-        public string Description
+        internal string Description
         {
             get;
         }
@@ -32,7 +32,7 @@
         /// <summary>
         /// Job's execution schedules in cron format.
         /// </summary>
-        public string[] CronSchedules
+        internal string[] CronSchedules
         {
             get;
         }
@@ -40,7 +40,7 @@
         /// <summary>
         /// Indicated whether registration required or not. if registration required, job will not trigger til job register itself to central unit.
         /// </summary>
-        public bool RegistrationRequired
+        internal bool RegistrationRequired
         {
             get;
         }
