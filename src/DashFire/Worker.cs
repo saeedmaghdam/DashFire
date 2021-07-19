@@ -52,14 +52,14 @@ namespace DashFire
                 _queueManager.StartConsume(job.JobInstance.Key, job.JobInstance.InstanceId);
 
                 _logger.LogInformation($"Starting { job.JobInstance.JobInformation.SystemName }");
-                tasks.Add(job.JobInstance.StartAsync(cancellationToken));
+                tasks.Add((job.JobInstance as Job).StartAsync(cancellationToken));
             }
 
             try
             {
                 Task.WaitAll(tasks.ToArray(), cancellationToken);
             }
-            catch (OperationCanceledException ex)
+            catch (OperationCanceledException)
             {
                 _logger.LogError("A cancellation signal has been thrown from the service.");
             }
@@ -91,7 +91,7 @@ namespace DashFire
             foreach (var job in _jobContext.ServiceJobs)
             {
                 _logger.LogInformation($"Stopping { job.JobInstance.JobInformation.SystemName }");
-                tasks.Add(job.JobInstance.ShutdownAsync(cancellationToken));
+                tasks.Add((job.JobInstance as Job).ShutdownAsync(cancellationToken));
             }
             Task.WaitAll(tasks.ToArray(), cancellationToken);
 

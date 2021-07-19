@@ -6,12 +6,12 @@ namespace DashFire
     /// <summary>
     /// Contains the job including the job type, instances, parameters and some extra informations about the job.
     /// </summary>
-    public class JobContainer
+    internal class JobContainer
     {
         /// <summary>
         /// Full name of the job.
         /// </summary>
-        public string Key
+        internal string Key
         {
             get;
             set;
@@ -20,7 +20,7 @@ namespace DashFire
         /// <summary>
         /// Job type.
         /// </summary>
-        public Type JobType
+        internal Type JobType
         {
             get;
             set;
@@ -29,7 +29,7 @@ namespace DashFire
         /// <summary>
         /// Job instance.
         /// </summary>
-        public IJob JobInstance
+        internal IJob JobInstance
         {
             get;
             set;
@@ -47,7 +47,7 @@ namespace DashFire
         /// <summary>
         /// Parameters list including parameter name, display name, description and parameter type.
         /// </summary>
-        public List<JobParameterContainer> Parameters
+        internal List<JobParameterContainer> Parameters
         {
             get;
             set;

@@ -31,26 +31,5 @@ namespace DashFire
         {
             get;
         }
-
-        /// <summary>
-        /// Starts the job.
-        /// </summary>
-        /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>Returns a task.</returns>
-        Task StartAsync(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Stops the job.
-        /// </summary>
-        /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>Returns a task.</returns>
-        Task StopAsync(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Shutdowns the job.
-        /// </summary>
-        /// <param name="cancellationToken">Cancellation token.</param>
-        /// <returns>Returns a task.</returns>
-        Task ShutdownAsync(CancellationToken cancellationToken);
     }
 }

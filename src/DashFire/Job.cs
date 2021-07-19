@@ -70,7 +70,7 @@ namespace DashFire
         /// </summary>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>Returns a task.</returns>
-        public async Task StartAsync(CancellationToken cancellationToken)
+        internal async Task StartAsync(CancellationToken cancellationToken)
         {
             do
             {
@@ -151,7 +151,7 @@ namespace DashFire
         /// </summary>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>Returns a task.</returns>
-        public async Task StopAsync(CancellationToken cancellationToken)
+        internal async Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation($"{JobInformation.SystemName} Stoped!");
 
@@ -173,7 +173,7 @@ namespace DashFire
         /// </summary>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>Returns a task.</returns>
-        public async Task ShutdownAsync(CancellationToken cancellationToken)
+        internal async Task ShutdownAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation($"{JobInformation.SystemName} Shutdown!");
 
