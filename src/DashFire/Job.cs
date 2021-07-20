@@ -288,7 +288,7 @@ namespace DashFire
             {
                 ChangeStatus(Constants.JobStatus.Scheduled);
 
-                var NextExecutionDateTime = DateTime.MaxValue;
+                NextExecutionDateTime = DateTime.MaxValue;
                 foreach (var cronExpression in JobInformation.CronSchedules)
                 {
                     var crontabSchedule = CrontabSchedule.Parse(cronExpression);
@@ -301,6 +301,15 @@ namespace DashFire
                 {
                     _logger.LogInformation($"{JobInformation.SystemName} scheduled to execute at {NextExecutionDateTime}");
                     LogJobStatus($"Job has been scheduled to execute at {NextExecutionDateTime}.");
+
+                    var jobScheduleModel = new Models.JobScheduleModel()
+                    {
+                        Key = Key,
+                        InstanceId = InstanceId,
+                        NextExecutionDateTime = this.NextExecutionDateTime
+                    };
+
+                    _queueManager.Publish(Constants.MessageTypes.JobSchedule, JsonSerializer.Serialize(jobScheduleModel));
 
                     await Task.Delay(sleepTime, cancellationToken);
                 }
