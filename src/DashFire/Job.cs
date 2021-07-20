@@ -304,6 +304,15 @@ namespace DashFire
         private void ChangeStatus(Constants.JobStatus jobStatus)
         {
             _jobStatus = jobStatus;
+
+            var statusModel = new Models.StatusModel()
+            {
+                Key = Key,
+                InstanceId = InstanceId,
+                JobStatus = _jobStatus
+            };
+
+            _queueManager.Publish(Constants.MessageTypes.JobStatus, JsonSerializer.Serialize(statusModel));
         }
     }
 }

@@ -3,6 +3,7 @@
     internal enum MessageTypes
     {
         Registration,
-        HeartBit
+        HeartBit,
+        JobStatus
     }
 }
