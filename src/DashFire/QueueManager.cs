@@ -57,7 +57,20 @@ namespace DashFire
             // Declare dashboard exchanges and queue
             _channel.ExchangeDeclare(_serviceSideExchangeName, "headers", true);
 
-            var serviceSideQueueName = $"{_serviceSideQueueName}_{MessageTypes.Registration}";
+            var serviceSideQueueName = $"{_serviceSideQueueName}_{MessageTypes.HeartBit}";
+            _channel.QueueDeclare(queue: serviceSideQueueName,
+                                     durable: true,
+                                     exclusive: false,
+                                     autoDelete: false,
+                                     arguments: null);
+            _channel.QueueBind(serviceSideQueueName, _serviceSideExchangeName, string.Empty, new Dictionary<string, object>()
+            {
+                {
+                    "message_type", MessageTypes.HeartBit.ToString().ToLower()
+                }
+            });
+
+            serviceSideQueueName = $"{_serviceSideQueueName}_{MessageTypes.Registration}";
             _channel.QueueDeclare(queue: serviceSideQueueName,
                                      durable: true,
                                      exclusive: false,

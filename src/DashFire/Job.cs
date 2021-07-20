@@ -19,6 +19,9 @@ namespace DashFire
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         private Constants.JobRegistrationStatus _registrationStatus = Constants.JobRegistrationStatus.New;
+        private Constants.HeartBitStatus _heartBitStatus = Constants.HeartBitStatus.New;
+        private long _heartBitExpirationTicks;
+        private long _freshHeartBitExpirationTicks;
 
         /// <summary>
         /// Contains job's information which will be used in whole system.
@@ -75,10 +78,12 @@ namespace DashFire
             _queueManager.Received += _queueManager_Received;
             _queueManager.StartConsume(Key, InstanceId);
 
+            InitializeHeartBitAsync(cancellationToken);
+
             do
             {
-                // Register the job
                 await RegisterJobAsync();
+                await CheckServerAvailability();
 
                 _logger.LogInformation($"{JobInformation.SystemName} Started.");
                 await StartInternallyAsync(cancellationToken);
@@ -139,6 +144,43 @@ namespace DashFire
             return Task.CompletedTask;
         }
 
+        private async Task InitializeHeartBitAsync(CancellationToken cancellationToken)
+        {
+            await SendHeartBitAsync(cancellationToken: cancellationToken);
+            do
+            {
+                await SendHeartBitAsync(TimeSpan.FromSeconds(10), cancellationToken);
+            } while (!cancellationToken.IsCancellationRequested);
+        }
+
+        private async Task SendHeartBitAsync(TimeSpan delayTime = default(TimeSpan), CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (_heartBitStatus == Constants.HeartBitStatus.Requested)
+            {
+                if (DateTime.Now.Ticks < _freshHeartBitExpirationTicks)
+                {
+                    await Task.Delay(TimeSpan.FromSeconds(3), cancellationToken);
+                    return;
+                }
+            }
+
+            if (DateTime.Now.Ticks < _freshHeartBitExpirationTicks)
+            {
+                if (delayTime != default(TimeSpan))
+                    await Task.Delay(delayTime, cancellationToken);
+            }
+
+            _heartBitStatus = Constants.HeartBitStatus.Requested;
+            _freshHeartBitExpirationTicks = DateTime.Now.AddMinutes(2).Ticks;
+
+            var heartBitModel = new Models.HeartBitModel()
+            {
+                Key = Key,
+                InstanceId = InstanceId
+            };
+            _queueManager.Publish(Constants.MessageTypes.HeartBit, JsonSerializer.Serialize(heartBitModel));
+        }
+
         private async Task RegisterJobAsync()
         {
             if (_registrationStatus == Constants.JobRegistrationStatus.Registered)
@@ -165,26 +207,65 @@ namespace DashFire
 
             _logger.LogInformation($"Registeration is required for job {JobInformation.SystemName}");
 
+            if (JobInformation.RegistrationRequired)
+            {
+                do
+                {
+                    try
+                    {
+                        _logger.LogInformation($"Job {JobInformation.SystemName} is waiting for the registration response.");
+
+                        await Task.Delay(int.MaxValue, _cancellationTokenSource.Token);
+                    }
+                    catch { }
+                } while (!_cancellationTokenSource.IsCancellationRequested);
+            }
+
+            _heartBitExpirationTicks = DateTime.Now.AddMinutes(1).Ticks;
+        }
+
+        private async Task CheckServerAvailability()
+        {
+            var isServerAlive = await IsServerAlive();
+            if (isServerAlive)
+                return;
+            if (!JobInformation.RegistrationRequired)
+                return;
+
             do
             {
-                try
-                {
-                    _logger.LogInformation($"Job {JobInformation.SystemName} is waiting for the registration response.");
+                _logger.LogError($"Server is not alive, execution of {JobInformation.SystemName} suspended.");
+                await Task.Delay(TimeSpan.FromSeconds(3));
 
-                    await Task.Delay(int.MaxValue, _cancellationTokenSource.Token);
-                }
-                catch { }
-            } while (!_cancellationTokenSource.IsCancellationRequested);
+                isServerAlive = await IsServerAlive();
+            } while (!isServerAlive);
+        }
+
+        private Task<bool> IsServerAlive()
+        {
+            if (DateTime.Now.Ticks < _heartBitExpirationTicks)
+                return Task.FromResult(true);
+
+            _logger.LogWarning($"DashFire server is not alive.");
+            return Task.FromResult(false);
         }
 
         private Task _queueManager_Received(string jobKey, string jobInstanceId, string messageType, string message)
         {
-            if (jobKey == Key && jobInstanceId == InstanceId && messageType == Constants.MessageTypes.Registration.ToString().ToLower())
+            if (jobKey != Key && jobInstanceId != InstanceId)
+                return Task.CompletedTask;
+
+            if (messageType == Constants.MessageTypes.Registration.ToString().ToLower())
             {
                 _logger.LogInformation($"Job {JobInformation.SystemName} registered successfully.");
 
                 _registrationStatus = Constants.JobRegistrationStatus.Registered;
                 _cancellationTokenSource.Cancel();
+            }
+            else if (messageType == Constants.MessageTypes.HeartBit.ToString().ToLower())
+            {
+                _heartBitExpirationTicks = DateTime.Now.AddMinutes(1).Ticks;
+                _heartBitStatus = Constants.HeartBitStatus.Alive;
             }
 
             return Task.CompletedTask;
