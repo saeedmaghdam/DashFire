@@ -88,8 +88,10 @@ namespace DashFire
 
                 ChangeStatus(Constants.JobStatus.Running);
                 _logger.LogInformation($"{JobInformation.SystemName} Started.");
+                LogJobStatus("Job is running.");
                 await StartInternallyAsync(cancellationToken);
                 _logger.LogInformation($"{JobInformation.SystemName} Finished.");
+                LogJobStatus("Job has been finished.");
 
                 await ScheduleAsync(cancellationToken);
             } while (!cancellationToken.IsCancellationRequested);
@@ -110,6 +112,7 @@ namespace DashFire
         internal async Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation($"{JobInformation.SystemName} Stoped!");
+            LogJobStatus("Job has been stopped.");
 
             await StopInternallyAsync(cancellationToken);
         }
@@ -132,6 +135,7 @@ namespace DashFire
         internal async Task ShutdownAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation($"{JobInformation.SystemName} Shutdown!");
+            LogJobStatus("Job has been shutdown.");
 
             await ShutdownInternallyAsync(cancellationToken);
         }
@@ -264,6 +268,7 @@ namespace DashFire
             if (messageType == Constants.MessageTypes.Registration.ToString().ToLower())
             {
                 _logger.LogInformation($"Job {JobInformation.SystemName} registered successfully.");
+                LogJobStatus("Job has been registered successfully.");
 
                 _registrationStatus = Constants.JobRegistrationStatus.Registered;
                 _cancellationTokenSource.Cancel();
@@ -295,6 +300,7 @@ namespace DashFire
                 if (sleepTime.TotalSeconds > 0)
                 {
                     _logger.LogInformation($"{JobInformation.SystemName} scheduled to execute at {NextExecutionDateTime}");
+                    LogJobStatus($"Job has been scheduled to execute at {NextExecutionDateTime}.");
 
                     await Task.Delay(sleepTime, cancellationToken);
                 }
@@ -313,6 +319,18 @@ namespace DashFire
             };
 
             _queueManager.Publish(Constants.MessageTypes.JobStatus, JsonSerializer.Serialize(statusModel));
+        }
+
+        private void LogJobStatus(string message)
+        {
+            var statusModel = new Models.LogJobStatusModel()
+            {
+                Key = Key,
+                InstanceId = InstanceId,
+                Message = message
+            };
+
+            _queueManager.Publish(Constants.MessageTypes.LogJobStatus, JsonSerializer.Serialize(statusModel));
         }
     }
 }

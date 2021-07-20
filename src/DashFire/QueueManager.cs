@@ -96,6 +96,19 @@ namespace DashFire
                 }
             });
 
+            serviceSideQueueName = $"{_serviceSideQueueName}_{MessageTypes.LogJobStatus}";
+            _channel.QueueDeclare(queue: serviceSideQueueName,
+                                     durable: true,
+                                     exclusive: false,
+                                     autoDelete: false,
+                                     arguments: null);
+            _channel.QueueBind(serviceSideQueueName, _serviceSideExchangeName, string.Empty, new Dictionary<string, object>()
+            {
+                {
+                    "message_type", MessageTypes.LogJobStatus.ToString().ToLower()
+                }
+            });
+
             // Declare dashboard exchanges and queue
             var dashboardSideQueueName = $"{_dashboardSideExchangeName}_{jobKey}_{jobInstanceId}";
             _channel.ExchangeDeclare(_dashboardSideExchangeName, "headers", true);
