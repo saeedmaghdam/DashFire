@@ -20,6 +20,7 @@ namespace DashFire
 
         private Constants.JobRegistrationStatus _registrationStatus = Constants.JobRegistrationStatus.New;
         private Constants.HeartBitStatus _heartBitStatus = Constants.HeartBitStatus.New;
+        private Constants.JobStatus _jobStatus = Constants.JobStatus.Idle;
         private long _heartBitExpirationTicks;
         private long _freshHeartBitExpirationTicks;
 
@@ -85,6 +86,7 @@ namespace DashFire
                 await RegisterJobAsync();
                 await CheckServerAvailability();
 
+                ChangeStatus(Constants.JobStatus.Running);
                 _logger.LogInformation($"{JobInformation.SystemName} Started.");
                 await StartInternallyAsync(cancellationToken);
                 _logger.LogInformation($"{JobInformation.SystemName} Finished.");
@@ -186,6 +188,8 @@ namespace DashFire
             if (_registrationStatus == Constants.JobRegistrationStatus.Registered)
                 return;
 
+            ChangeStatus(Constants.JobStatus.Registering);
+
             var registrationModel = new Models.RegistrationModel()
             {
                 Key = Key,
@@ -232,6 +236,8 @@ namespace DashFire
             if (!JobInformation.RegistrationRequired)
                 return;
 
+            ChangeStatus(Constants.JobStatus.Synchronizing);
+
             do
             {
                 _logger.LogError($"Server is not alive, execution of {JobInformation.SystemName} suspended.");
@@ -275,6 +281,8 @@ namespace DashFire
         {
             if (JobInformation.CronSchedules.Any() && !cancellationToken.IsCancellationRequested)
             {
+                ChangeStatus(Constants.JobStatus.Scheduled);
+
                 var NextExecutionDateTime = DateTime.MaxValue;
                 foreach (var cronExpression in JobInformation.CronSchedules)
                 {
@@ -291,6 +299,11 @@ namespace DashFire
                     await Task.Delay(sleepTime, cancellationToken);
                 }
             }
+        }
+
+        private void ChangeStatus(Constants.JobStatus jobStatus)
+        {
+            _jobStatus = jobStatus;
         }
     }
 }
