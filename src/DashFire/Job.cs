@@ -161,6 +161,12 @@ namespace DashFire
 
         private async Task SendHeartBitAsync(TimeSpan delayTime = default(TimeSpan), CancellationToken cancellationToken = default(CancellationToken))
         {
+            if (_registrationStatus != Constants.JobRegistrationStatus.Registered)
+            {
+                await Task.Delay(TimeSpan.FromSeconds(3), cancellationToken);
+                return;
+            }
+
             if (_heartBitStatus == Constants.HeartBitStatus.Requested)
             {
                 if (DateTime.Now.Ticks < _freshHeartBitExpirationTicks)
@@ -306,14 +312,17 @@ namespace DashFire
                     _logger.LogInformation($"{JobInformation.SystemName} scheduled to execute at {NextExecutionDateTime}");
                     LogJobStatus($"Job has been scheduled to execute at {NextExecutionDateTime}.");
 
-                    var jobScheduleModel = new Models.JobScheduleModel()
+                    if (_registrationStatus == Constants.JobRegistrationStatus.Registered)
                     {
-                        Key = Key,
-                        InstanceId = InstanceId,
-                        NextExecutionDateTime = this.NextExecutionDateTime
-                    };
+                        var jobScheduleModel = new Models.JobScheduleModel()
+                        {
+                            Key = Key,
+                            InstanceId = InstanceId,
+                            NextExecutionDateTime = this.NextExecutionDateTime
+                        };
 
-                    _queueManager.Publish(Constants.MessageTypes.JobSchedule, JsonSerializer.Serialize(jobScheduleModel));
+                        _queueManager.Publish(Constants.MessageTypes.JobSchedule, JsonSerializer.Serialize(jobScheduleModel));
+                    }
 
                     await Task.Delay(sleepTime, cancellationToken);
                 }
@@ -323,6 +332,9 @@ namespace DashFire
         private void ChangeStatus(Constants.JobStatus jobStatus)
         {
             _jobStatus = jobStatus;
+
+            if (_registrationStatus != Constants.JobRegistrationStatus.Registered)
+                return;
 
             var statusModel = new Models.StatusModel()
             {
@@ -336,6 +348,9 @@ namespace DashFire
 
         private void LogJobStatus(string message)
         {
+            if (_registrationStatus != Constants.JobRegistrationStatus.Registered)
+                return;
+
             var statusModel = new Models.LogJobStatusModel()
             {
                 Key = Key,
