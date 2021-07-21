@@ -204,7 +204,11 @@ namespace DashFire
                     DisplayName = x.DisplayName,
                     ParameterName = x.ParameterName,
                     TypeFullName = x.Type.FullName
-                }).ToList()
+                }).ToList(),
+                SystemName = JobInformation.SystemName,
+                Description = JobInformation.Description,
+                DisplayName = JobInformation.DisplayName,
+                RegistrationRequired = JobInformation.RegistrationRequired
             };
             _registrationStatus = Constants.JobRegistrationStatus.Registering;
             _cancellationTokenSource = new CancellationTokenSource();
