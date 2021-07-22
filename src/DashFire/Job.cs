@@ -138,6 +138,8 @@ namespace DashFire
             LogJobStatus("Job has been shutdown.");
 
             await ShutdownInternallyAsync(cancellationToken);
+
+            Shutdown();
         }
 
         /// <summary>
@@ -359,6 +361,20 @@ namespace DashFire
             };
 
             _queueManager.Publish(Constants.MessageTypes.LogJobStatus, JsonSerializer.Serialize(statusModel));
+        }
+
+        private void Shutdown()
+        {
+            if (_registrationStatus != Constants.JobRegistrationStatus.Registered)
+                return;
+
+            var shutdownModel = new Models.ShutdownModel()
+            {
+                Key = Key,
+                InstanceId = InstanceId
+            };
+
+            _queueManager.Publish(Constants.MessageTypes.Shutdown, JsonSerializer.Serialize(shutdownModel));
         }
     }
 }
