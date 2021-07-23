@@ -176,6 +176,26 @@ namespace DashFire
             _channel.BasicConsume($"{_dashboardSideExchangeName}_{jobKey}_{jobInstanceId}", true, consumer);
         }
 
+        internal void DeclareExchangeAndQueue(string jobKey, string jobInstanceId)
+        {
+            var dashboardSideQueueName = $"{_dashboardSideExchangeName}_{jobKey}_{jobInstanceId}";
+            _channel.ExchangeDeclare(_dashboardSideExchangeName, "headers", true);
+            _channel.QueueDeclare(queue: dashboardSideQueueName,
+                                     durable: true,
+                                     exclusive: false,
+                                     autoDelete: false,
+                                     arguments: null);
+            _channel.QueueBind(dashboardSideQueueName, _dashboardSideExchangeName, string.Empty, new Dictionary<string, object>()
+            {
+                {
+                    "job_key", jobKey
+                },
+                {
+                    "job_instance_id", jobInstanceId
+                }
+            });
+        }
+
         private void ConsumerReceived(object sender, BasicDeliverEventArgs e)
         {
             var headers = e.BasicProperties;

@@ -40,7 +40,7 @@ namespace DashFire.Service.Sample
         {
             _logger.LogInformation("SampleJob1: I don't have any schedule and I'll execute til service is on!");
 
-            await Task.Delay(TimeSpan.FromSeconds(10), cancellationToken);
+            await Task.Delay(TimeSpan.FromSeconds(30), cancellationToken);
         }
     }
 }
