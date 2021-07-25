@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using DashFire.Utils;
 using Microsoft.Extensions.Logging;
 using NCrontab;
 
@@ -285,12 +286,18 @@ namespace DashFire
             if (_registrationStatus == Constants.JobRegistrationStatus.Registered)
             {
                 // Create new instance and execute the instance and wait for the result!
-                var jobContainer = JobContainerHelper.BuildContainer(this.GetType(), Constants.JobExecutionType.Service, Context.Instance.ServiceProvider);
+                var currentJobContainer = _jobContext.Jobs.Where(x => x.Key == _remoteExecutionRequest.Key).Single();
+                var jobContainer = JobContainerHelper.BuildContainer(currentJobContainer.JobType, Constants.JobExecutionType.Service, Context.Instance.ServiceProvider);
                 var jobInstance = jobContainer.JobInstance as Job;
-
                 jobInstance.InstanceId = _remoteExecutionRequest.NewInstanceId;
                 jobInstance.JobExecutionMode = Constants.JobExecutionMode.ServerRequestedMode;
                 jobInstance.JobInformation.RegistrationRequired = true;
+                var properties = currentJobContainer.JobType.GetProperties();
+                foreach(var newProperty in _remoteExecutionRequest.Parameters)
+                {
+                    var property = properties.Where(x => x.Name == newProperty.ParameterName).Single();
+                    ReflectionHelper.SetPropertyValue(jobInstance, newProperty.ParameterName, newProperty.Value);
+                }
                 _queueManager.DeclareExchangeAndQueue(jobInstance.Key, jobInstance.InstanceId);
 
                 await jobInstance.StartAsync(cancellationToken);
