@@ -43,6 +43,7 @@
         internal bool RegistrationRequired
         {
             get;
+            set;
         }
 
         /// <summary>

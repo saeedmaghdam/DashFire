@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using DashFire.Constants;
 
 namespace DashFire.Models
 {
@@ -41,6 +42,18 @@ namespace DashFire.Models
         }
 
         public bool RegistrationRequired
+        {
+            get;
+            set;
+        }
+
+        public JobExecutionMode JobExecutionMode
+        {
+            get;
+            set;
+        }
+
+        public string OriginalInstanceId
         {
             get;
             set;

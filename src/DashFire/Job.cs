@@ -23,6 +23,7 @@ namespace DashFire
         private Constants.JobStatus _jobStatus = Constants.JobStatus.Idle;
         private long _heartBitExpirationTicks;
         private long _freshHeartBitExpirationTicks;
+        private Models.JobExecutionRequestModel _remoteExecutionRequest;
 
         /// <summary>
         /// Contains job's information which will be used in whole system.
@@ -59,6 +60,12 @@ namespace DashFire
             private set;
         }
 
+        internal Constants.JobExecutionMode JobExecutionMode
+        {
+            get;
+            set;
+        } = Constants.JobExecutionMode.ServiceMode;
+
         /// <summary>
         /// JobBase default constructor.
         /// </summary>
@@ -85,6 +92,7 @@ namespace DashFire
             {
                 await RegisterJobAsync();
                 await CheckServerAvailability();
+                await ExecuteRequestAsync(cancellationToken);
 
                 ChangeStatus(Constants.JobStatus.Running);
                 _logger.LogInformation($"{JobInformation.SystemName} Started.");
@@ -92,7 +100,10 @@ namespace DashFire
                 await StartInternallyAsync(cancellationToken);
                 _logger.LogInformation($"{JobInformation.SystemName} Finished.");
                 LogJobStatus("Job has been finished.");
+                ChangeStatus(Constants.JobStatus.Idle);
 
+                if (JobExecutionMode != Constants.JobExecutionMode.ServiceMode)
+                    break;
                 await ScheduleAsync(cancellationToken);
             } while (!cancellationToken.IsCancellationRequested);
         }
@@ -134,6 +145,7 @@ namespace DashFire
         /// <returns>Returns a task.</returns>
         internal async Task ShutdownAsync(CancellationToken cancellationToken)
         {
+            ChangeStatus(Constants.JobStatus.Shutdown);
             _logger.LogInformation($"{JobInformation.SystemName} Shutdown!");
             LogJobStatus("Job has been shutdown.");
 
@@ -157,7 +169,7 @@ namespace DashFire
             await SendHeartBitAsync(cancellationToken: cancellationToken);
             do
             {
-                await SendHeartBitAsync(TimeSpan.FromSeconds(10), cancellationToken);
+                await SendHeartBitAsync(TimeSpan.FromMinutes(1), cancellationToken);
             } while (!cancellationToken.IsCancellationRequested);
         }
 
@@ -216,7 +228,9 @@ namespace DashFire
                 SystemName = JobInformation.SystemName,
                 Description = JobInformation.Description,
                 DisplayName = JobInformation.DisplayName,
-                RegistrationRequired = JobInformation.RegistrationRequired
+                RegistrationRequired = JobInformation.RegistrationRequired,
+                JobExecutionMode = JobExecutionMode,
+                OriginalInstanceId = _remoteExecutionRequest?.InstanceId
             };
             _registrationStatus = Constants.JobRegistrationStatus.Registering;
             _cancellationTokenSource = new CancellationTokenSource();
@@ -263,6 +277,30 @@ namespace DashFire
             } while (!isServerAlive);
         }
 
+        private async Task ExecuteRequestAsync(CancellationToken cancellationToken)
+        {
+            if (_remoteExecutionRequest == null)
+                return;
+
+            if (_registrationStatus == Constants.JobRegistrationStatus.Registered)
+            {
+                // Create new instance and execute the instance and wait for the result!
+                var jobContainer = JobContainerHelper.BuildContainer(this.GetType(), Constants.JobExecutionType.Service, Context.Instance.ServiceProvider);
+                var jobInstance = jobContainer.JobInstance as Job;
+
+                jobInstance.InstanceId = _remoteExecutionRequest.NewInstanceId;
+                jobInstance.JobExecutionMode = Constants.JobExecutionMode.ServerRequestedMode;
+                jobInstance.JobInformation.RegistrationRequired = true;
+                _queueManager.DeclareExchangeAndQueue(jobInstance.Key, jobInstance.InstanceId);
+
+                await jobInstance.StartAsync(cancellationToken);
+                await jobInstance.StopAsync(cancellationToken);
+                await jobInstance.ShutdownAsync(cancellationToken);
+            }
+
+            _remoteExecutionRequest = null;
+        }
+
         private Task<bool> IsServerAlive()
         {
             if (DateTime.Now.Ticks < _heartBitExpirationTicks)
@@ -289,6 +327,11 @@ namespace DashFire
             {
                 _heartBitExpirationTicks = DateTime.Now.AddMinutes(1).Ticks;
                 _heartBitStatus = Constants.HeartBitStatus.Alive;
+            }
+            else if (messageType == Constants.MessageTypes.JobExecutionRequest.ToString().ToLower())
+            {
+                var model = JsonSerializer.Deserialize<Models.JobExecutionRequestModel>(message);
+                _remoteExecutionRequest = model;
             }
 
             return Task.CompletedTask;
