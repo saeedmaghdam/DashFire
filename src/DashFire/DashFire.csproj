@@ -6,6 +6,15 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <CodeAnalysisRuleSet>../../build/Analyzers.ruleset</CodeAnalysisRuleSet>
     <WarningsAsErrors>;NU1605;CS1591;CS1573;CS0628;CS0429;CS0105;</WarningsAsErrors>
+    <Version>0.1.0-beta</Version>
+    <Authors>Saeed Aghdam</Authors>
+    <Company>DashFire</Company>
+    <Description>DashFire is a totally free and open-source task scheduler library. DashFire handles the communications with server, schedules the jobs, logs the messages, etc.</Description>
+    <Copyright>2021 DashFire</Copyright>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <RepositoryUrl>https://github.com/saeedmaghdam/DashFire</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>Worker Services, Job, Task Scheduler, Windows Service, Systemd Service</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -28,6 +37,10 @@
     <None Remove="RabbitMQ.Client" />
     <None Remove="Models\" />
     <None Remove="Constants\" />
+    <None Include="..\..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="5.0.0" />
@@ -43,5 +56,8 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Attributes\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.txt" pack="true" PackagePath="." />
   </ItemGroup>
 </Project>

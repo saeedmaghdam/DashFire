@@ -1,4 +1,5 @@
 
+
 # DashFire
 > A .Net library to create jobs and services which could connect to DashFire Dashboard easily.
 
@@ -18,7 +19,7 @@ To install DashFire in Visual Studio's Package Manager Console:
 
 ```sh
 
-Install-Package DashFire -Version 1.0.0
+Install-Package DashFire -Version 0.1.0-beta
 
 ```
 
@@ -26,7 +27,7 @@ To install in a specific project use:
 
 ```sh
 
-Install-Package DashFire -Version 1.0.0 -ProjectName Your_Project_Name
+Install-Package DashFire -Version 0.1.0-beta -ProjectName Your_Project_Name
 
 ```
 
@@ -106,7 +107,7 @@ Now you can run the app and it's do the rest!
   
 ### Visit [CHANGELOG.md] to see full change log history of DashFire
 
-* 1.0.0
+* 0.1.0-beta
 	* Initialized the library
 		* Handles dependency injection
 		* Handles logging
