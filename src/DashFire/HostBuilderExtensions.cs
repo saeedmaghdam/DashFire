@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System.IO;
+using System.Reflection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -18,6 +20,7 @@ namespace DashFire
         {
             hostBuilder.ConfigureAppConfiguration((hostingContext, config) =>
             {
+                config.SetBasePath(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location));
                 config.AddJsonFile("appsettings.json", optional: true);
                 config.AddEnvironmentVariables();
             }).ConfigureServices((hostContext, services) =>
