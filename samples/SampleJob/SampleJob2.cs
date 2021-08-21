@@ -24,9 +24,9 @@ namespace DashFire.Service.Sample
             _dashLogger = dashLogger;
         }
 
-        protected override Task StartInternallyAsync(CancellationToken cancellationToken)
+        protected override Task StartInternallyAsync(CancellationToken cancellationToken) 
         {
-            _dashLogger.Log(Key, InstanceId, "I'm sending this message from the job!");
+            _dashLogger.LogAsync(Key, InstanceId, "I'm sending this message from the job!", cancellationToken);
             _logger.LogInformation($"Service2: DashFire fires me due to cron schedules! DashFire schedules me and I prommise I'll back soon!");
 
             return Task.CompletedTask;

@@ -19,7 +19,7 @@ To install DashFire in Visual Studio's Package Manager Console:
 
 ```sh
 
-Install-Package DashFire -Version 0.1.0-beta
+Install-Package DashFire -Version 0.2.0-beta
 
 ```
 
@@ -27,7 +27,7 @@ To install in a specific project use:
 
 ```sh
 
-Install-Package DashFire -Version 0.1.0-beta -ProjectName Your_Project_Name
+Install-Package DashFire -Version 0.2.0-beta -ProjectName Your_Project_Name
 
 ```
 
@@ -116,6 +116,10 @@ Now you can run the app and it's do the rest!
 		* Handles remote execution messages
 		* Handles heart-bit
 		* Handles remote execution
+* 0.2.0-beta
+	* Added DashFire.Logger library
+		* Added IDashLogger.
+		* Added framework library and used in DashFire.
 
 ## Meta
 Saeed Aghdam – [Linkedin][linkedin]
