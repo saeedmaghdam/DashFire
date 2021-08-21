@@ -50,7 +50,7 @@ namespace DashFire
             {
                 _logger.LogInformation($"Initializing the queue for { job.JobInstance.JobInformation.SystemName }");
                 _queueManager.Initialize(job.JobInstance.Key, job.JobInstance.InstanceId);
-                _queueManager.StartConsume(job.JobInstance.Key, job.JobInstance.InstanceId);
+                _queueManager.StartConsume(job.JobInstance.Key, job.JobInstance.InstanceId, cancellationToken);
 
                 _logger.LogInformation($"Starting { job.JobInstance.JobInformation.SystemName }");
                 tasks.Add((job.JobInstance as Job).StartAsync(cancellationToken));
@@ -99,7 +99,7 @@ namespace DashFire
             return Task.CompletedTask;
         }
 
-        private Task _queueManager_Received(string jobKey, string jobInstanceId, string messageType, string message)
+        private Task _queueManager_Received(string jobKey, string jobInstanceId, string messageType, string message, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }

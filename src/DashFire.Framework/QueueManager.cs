@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using DashFire.Framework.Constants;
 using Microsoft.Extensions.Options;
@@ -31,8 +32,9 @@ namespace DashFire.Framework
         /// <param name="jobInstanceId">Job's instance id.</param>
         /// <param name="messageType">message's type.</param>
         /// <param name="message">message.</param>
+        /// <param name="cancellationToken">cancellation token.</param>
         /// <returns>Returns a task.</returns>
-        public delegate Task ConsumeHandler(string jobKey, string jobInstanceId, string messageType, string message);
+        public delegate Task ConsumeHandler(string jobKey, string jobInstanceId, string messageType, string message, CancellationToken cancellationToken);
 
         /// <summary>
         /// Event raise when a new message received.
@@ -181,14 +183,21 @@ namespace DashFire.Framework
         /// <summary>
         /// Start consuming specified job's queue.
         /// </summary>
-        /// <param name="jobKey"></param>
-        /// <param name="jobInstanceId"></param>
-        public void StartConsume(string jobKey, string jobInstanceId)
+        /// <param name="jobKey">Job key</param>
+        /// <param name="jobInstanceId">Job instance id</param>
+        /// <param name="cancellationToken">Cancellation token</param>
+        public Task StartConsume(string jobKey, string jobInstanceId, CancellationToken cancellationToken)
         {
             var consumer = new EventingBasicConsumer(_channel);
-            consumer.Received += ConsumerReceived;
+            consumer.Received += async (sender, e) => {
+                await ConsumerReceived(sender, e, cancellationToken);
+
+                return;
+            };
 
             _channel.BasicConsume($"{_dashboardSideExchangeName}_{jobKey}_{jobInstanceId}", true, consumer);
+
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -216,7 +225,7 @@ namespace DashFire.Framework
             });
         }
 
-        private void ConsumerReceived(object sender, BasicDeliverEventArgs e)
+        private Task ConsumerReceived(object sender, BasicDeliverEventArgs e, CancellationToken cancellationToken)
         {
             var headers = e.BasicProperties;
             headers.Headers.TryGetValue("job_key", out var jobKeyBytes);
@@ -229,7 +238,9 @@ namespace DashFire.Framework
             var jobInstanceId = Encoding.UTF8.GetString((byte[])jobInstanceIdBytes);
             var messageType = Encoding.UTF8.GetString((byte[])messageTypeBytes);
 
-            Received?.Invoke(jobKey, jobInstanceId, messageType, message);
+            Received?.Invoke(jobKey, jobInstanceId, messageType, message, cancellationToken);
+
+            return Task.CompletedTask;
         }
     }
 }

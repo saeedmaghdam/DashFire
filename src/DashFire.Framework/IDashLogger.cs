@@ -1,4 +1,7 @@
-﻿namespace DashFire.Framework
+﻿using System.Threading;
+using System.Threading.Tasks;
+
+namespace DashFire.Framework
 {
     /// <summary>
     /// DashLogger which handles DashFire level logs and send logs to Dashboard.
@@ -11,7 +14,8 @@
         /// <param name="key">Job's Key</param>
         /// <param name="instanceId">Job's instance id</param>
         /// <param name="message">Log message content</param>
-        void Log(string key, string instanceId, string message);
+        /// <param name="cancellationToken">Cancellation token</param>
+        Task LogAsync(string key, string instanceId, string message, CancellationToken cancellationToken);
 
         /// <summary>
         /// Register a job as registered.
