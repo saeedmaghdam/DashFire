@@ -1,6 +1,6 @@
-﻿namespace DashFire.Constants
+﻿namespace DashFire.Framework.Constants
 {
-    internal enum JobExecutionType
+    public enum JobExecutionType
     {
         /// <summary>
         /// Job initialized as a service, it'll scheduled to be executed.

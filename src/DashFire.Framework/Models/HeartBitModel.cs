@@ -1,6 +1,6 @@
-﻿namespace DashFire.Models
+﻿namespace DashFire.Framework.Models
 {
-    internal class ShutdownModel
+    public class HeartBitModel
     {
         public string Key
         {

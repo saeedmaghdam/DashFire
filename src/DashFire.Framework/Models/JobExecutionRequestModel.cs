@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace DashFire.Models
+namespace DashFire.Framework.Models
 {
-    internal class JobExecutionRequestModel
+    public class JobExecutionRequestModel
     {
         public string Key
         {

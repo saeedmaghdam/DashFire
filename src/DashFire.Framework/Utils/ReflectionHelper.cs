@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Reflection;
 
 namespace DashFire.Utils
 {
-    internal static class ReflectionHelper
+    public static class ReflectionHelper
     {
-        internal static void SetPropertyValue(object inputObject, string propertyName, object propertyVal)
+        public static void SetPropertyValue(object inputObject, string propertyName, object propertyVal)
         {
             //find out the type
             Type type = inputObject.GetType();
@@ -26,6 +29,36 @@ namespace DashFire.Utils
             //Set the value of the property
             propertyInfo.SetValue(inputObject, propertyVal, null);
 
+        }
+
+        public static string NameOfCallingClass()
+        {
+            string fullName;
+            Type declaringType;
+            int skipFrames = 2;
+            do
+            {
+                MethodBase method = new StackFrame(skipFrames, false).GetMethod();
+                declaringType = method.DeclaringType;
+                if (declaringType == null)
+                {
+                    return method.Name;
+                }
+                skipFrames++;
+                fullName = declaringType.FullName;
+            }
+            while (declaringType.Module.Name.Equals("mscorlib.dll", StringComparison.OrdinalIgnoreCase));
+
+            return fullName;
+        }
+
+        public static IEnumerable<Type> GetClassHierarchy(Type type)
+        {
+            while (type != null)
+            {
+                yield return type;
+                type = type.BaseType;
+            }
         }
 
         private static bool IsNullableType(Type type)

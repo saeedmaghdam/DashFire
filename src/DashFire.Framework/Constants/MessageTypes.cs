@@ -1,6 +1,6 @@
-﻿namespace DashFire.Constants
+﻿namespace DashFire.Framework.Constants
 {
-    internal enum MessageTypes
+    public enum MessageTypes
     {
         Registration,
         HeartBit,

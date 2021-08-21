@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using DashFire.Constants;
+using DashFire.Framework.Constants;
 
-namespace DashFire.Models
+namespace DashFire.Framework.Models
 {
-    internal class RegistrationModel
+    public class RegistrationModel
     {
         public string Key
         {

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DashFire.Attributes;
+using DashFire.Framework.Attributes;
+using DashFire.Framework.Constants;
 using Microsoft.Extensions.Configuration;
 
 namespace DashFire
@@ -18,7 +19,7 @@ namespace DashFire
         /// <param name="executionType">Job's execution type.</param>
         /// <param name="serviceProvider">Service provider.</param>
         /// <returns>Returns a job container.</returns>
-        internal static JobContainer BuildContainer(Type jobType, Constants.JobExecutionType executionType, IServiceProvider serviceProvider)
+        internal static JobContainer BuildContainer(Type jobType, JobExecutionType executionType, IServiceProvider serviceProvider)
         {
             // Get constructor parameters and inject dependency
             var constructors = jobType.GetConstructors();

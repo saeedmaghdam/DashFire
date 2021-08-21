@@ -10,6 +10,7 @@
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.16" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\src\DashFire.Logger\DashFire.Logger.csproj" />
     <ProjectReference Include="..\..\src\DashFire\DashFire.csproj" />
   </ItemGroup>
 </Project>

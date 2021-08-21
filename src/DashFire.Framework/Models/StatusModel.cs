@@ -1,8 +1,6 @@
-﻿using System;
-
-namespace DashFire.Models
+﻿namespace DashFire.Framework.Models
 {
-    internal class JobScheduleModel
+    public class StatusModel
     {
         public string Key
         {
@@ -16,7 +14,7 @@ namespace DashFire.Models
             set;
         }
 
-        public DateTime NextExecutionDateTime
+        public Constants.JobStatus JobStatus
         {
             get;
             set;

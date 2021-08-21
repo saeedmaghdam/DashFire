@@ -55,9 +55,9 @@
     <PackageReference Include="RabbitMQ.Client" Version="6.2.2" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Attributes\" />
+    <None Include="README.txt" pack="true" PackagePath="." />
   </ItemGroup>
   <ItemGroup>
-    <None Include="README.txt" pack="true" PackagePath="." />
+    <ProjectReference Include="..\DashFire.Framework\DashFire.Framework.csproj" />
   </ItemGroup>
 </Project>

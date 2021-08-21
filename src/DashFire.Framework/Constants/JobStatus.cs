@@ -1,6 +1,6 @@
-﻿namespace DashFire.Constants
+﻿namespace DashFire.Framework.Constants
 {
-    internal enum JobStatus
+    public enum JobStatus
     {
         New,            // Job has not run already.
         Registering,    // Job is registering itself at the server.

@@ -1,6 +1,8 @@
-﻿namespace DashFire.Models
+﻿using System;
+
+namespace DashFire.Framework.Models
 {
-    internal class LogJobStatusModel
+    public class JobScheduleModel
     {
         public string Key
         {
@@ -14,7 +16,7 @@
             set;
         }
 
-        public string Message
+        public DateTime NextExecutionDateTime
         {
             get;
             set;

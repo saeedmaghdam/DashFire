@@ -1,6 +1,6 @@
-﻿namespace DashFire.Models
+﻿namespace DashFire.Framework.Models
 {
-    internal class JobParameterModel
+    public class JobParameterModel
     {
         public string ParameterName
         {

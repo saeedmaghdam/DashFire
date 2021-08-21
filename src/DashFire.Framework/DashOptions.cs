@@ -1,4 +1,4 @@
-﻿namespace DashFire
+﻿namespace DashFire.Framework
 {
     /// <summary>
     /// DashOptions which contains service options exists in appsettings.json.

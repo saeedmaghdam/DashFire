@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using DashFire.Logger;
+using Microsoft.Extensions.Hosting;
 
 namespace DashFire.Service.Sample
 {
@@ -13,6 +14,7 @@ namespace DashFire.Service.Sample
             Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) =>
                 {
+                    services.AddDashLogger();
                     services.AddJob<SampleJob1>();
                     services.AddJob<SampleJob2>();
                 })

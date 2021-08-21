@@ -1,6 +1,6 @@
-﻿namespace DashFire.Constants
+﻿namespace DashFire.Framework.Constants
 {
-    internal enum JobExecutionMode
+    public enum JobExecutionMode
     {
         ServiceMode,
         AppMode,

@@ -1,20 +1,23 @@
-
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.810.4
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DashFire", "src\DashFire\DashFire.csproj", "{5EBB90C6-817E-45DB-864C-78FCADE378AC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DashFire", "src\DashFire\DashFire.csproj", "{5EBB90C6-817E-45DB-864C-78FCADE378AC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{F0C3C09F-0436-4B55-98F7-116A8D93A323}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{FB6AF5EC-E8E3-4D08-9702-62397AA6C8C3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DashFire.Service.Sample", "samples\SampleJob\DashFire.Service.Sample.csproj", "{33C74BBF-5810-4AD0-9D2C-7607830ABA89}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DashFire.Service.Sample", "samples\SampleJob\DashFire.Service.Sample.csproj", "{33C74BBF-5810-4AD0-9D2C-7607830ABA89}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A878669B-29EF-44F6-A56D-F996E82EB48B}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DashFire.Logger", "src\DashFire.Logger\DashFire.Logger.csproj", "{D5937AE3-862A-49BB-9797-B00C5D7AAA2B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DashFire.Framework", "src\DashFire.Framework\DashFire.Framework.csproj", "{BC700379-DD98-4AF7-991B-3FD461693B3F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,15 +33,25 @@ Global
 		{33C74BBF-5810-4AD0-9D2C-7607830ABA89}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{33C74BBF-5810-4AD0-9D2C-7607830ABA89}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{33C74BBF-5810-4AD0-9D2C-7607830ABA89}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5937AE3-862A-49BB-9797-B00C5D7AAA2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5937AE3-862A-49BB-9797-B00C5D7AAA2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5937AE3-862A-49BB-9797-B00C5D7AAA2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5937AE3-862A-49BB-9797-B00C5D7AAA2B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC700379-DD98-4AF7-991B-3FD461693B3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC700379-DD98-4AF7-991B-3FD461693B3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC700379-DD98-4AF7-991B-3FD461693B3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC700379-DD98-4AF7-991B-3FD461693B3F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {C1879263-12F0-4B4E-9A12-3C6C4BCB235D}
-	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{5EBB90C6-817E-45DB-864C-78FCADE378AC} = {F0C3C09F-0436-4B55-98F7-116A8D93A323}
 		{33C74BBF-5810-4AD0-9D2C-7607830ABA89} = {FB6AF5EC-E8E3-4D08-9702-62397AA6C8C3}
+		{D5937AE3-862A-49BB-9797-B00C5D7AAA2B} = {F0C3C09F-0436-4B55-98F7-116A8D93A323}
+		{BC700379-DD98-4AF7-991B-3FD461693B3F} = {F0C3C09F-0436-4B55-98F7-116A8D93A323}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C1879263-12F0-4B4E-9A12-3C6C4BCB235D}
 	EndGlobalSection
 EndGlobal

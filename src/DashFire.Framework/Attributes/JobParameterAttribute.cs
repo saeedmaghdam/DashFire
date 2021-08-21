@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DashFire.Attributes
+namespace DashFire.Framework.Attributes
 {
     /// <summary>
     /// Job parameter attribute which is used to show the property is a job parameter.

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using DashFire.Attributes;
+using DashFire.Framework.Attributes;
 using Microsoft.Extensions.Logging;
 
 namespace DashFire.Service.Sample

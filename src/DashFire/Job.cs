@@ -3,6 +3,9 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using DashFire.Framework;
+using DashFire.Framework.Constants;
+using DashFire.Framework.Models;
 using DashFire.Utils;
 using Microsoft.Extensions.Logging;
 using NCrontab;
@@ -17,14 +20,15 @@ namespace DashFire
         private readonly ILogger<Job> _logger;
         private readonly QueueManager _queueManager;
         private readonly JobContext _jobContext;
+        private readonly IDashLogger _dashLogger;
         private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
-        private Constants.JobRegistrationStatus _registrationStatus = Constants.JobRegistrationStatus.New;
-        private Constants.HeartBitStatus _heartBitStatus = Constants.HeartBitStatus.New;
-        private Constants.JobStatus _jobStatus = Constants.JobStatus.Idle;
+        private JobRegistrationStatus _registrationStatus = JobRegistrationStatus.New;
+        private HeartBitStatus _heartBitStatus = HeartBitStatus.New;
+        private JobStatus _jobStatus = JobStatus.Idle;
         private long _heartBitExpirationTicks;
         private long _freshHeartBitExpirationTicks;
-        private Models.JobExecutionRequestModel _remoteExecutionRequest;
+        private JobExecutionRequestModel _remoteExecutionRequest;
 
         /// <summary>
         /// Contains job's information which will be used in whole system.
@@ -61,11 +65,11 @@ namespace DashFire
             private set;
         }
 
-        internal Constants.JobExecutionMode JobExecutionMode
+        internal JobExecutionMode JobExecutionMode
         {
             get;
             set;
-        } = Constants.JobExecutionMode.ServiceMode;
+        } = JobExecutionMode.ServiceMode;
 
         /// <summary>
         /// JobBase default constructor.
@@ -75,6 +79,7 @@ namespace DashFire
             _logger = (ILogger<Job>)Context.Instance.ServiceProvider.GetService(typeof(ILogger<Job>));
             _queueManager = (QueueManager)Context.Instance.ServiceProvider.GetService(typeof(QueueManager));
             _jobContext = (JobContext)Context.Instance.ServiceProvider.GetService(typeof(JobContext));
+            _dashLogger = (IDashLogger)Context.Instance.ServiceProvider.GetService(typeof(IDashLogger));
         }
 
         /// <summary>
@@ -95,15 +100,15 @@ namespace DashFire
                 await CheckServerAvailability();
                 await ExecuteRequestAsync(cancellationToken);
 
-                ChangeStatus(Constants.JobStatus.Running);
+                ChangeStatus(JobStatus.Running);
                 _logger.LogInformation($"{JobInformation.SystemName} Started.");
                 LogJobStatus("Job is running.");
                 await StartInternallyAsync(cancellationToken);
                 _logger.LogInformation($"{JobInformation.SystemName} Finished.");
                 LogJobStatus("Job has been finished.");
-                ChangeStatus(Constants.JobStatus.Idle);
+                ChangeStatus(JobStatus.Idle);
 
-                if (JobExecutionMode != Constants.JobExecutionMode.ServiceMode)
+                if (JobExecutionMode != JobExecutionMode.ServiceMode)
                     break;
                 await ScheduleAsync(cancellationToken);
             } while (!cancellationToken.IsCancellationRequested);
@@ -146,7 +151,7 @@ namespace DashFire
         /// <returns>Returns a task.</returns>
         internal async Task ShutdownAsync(CancellationToken cancellationToken)
         {
-            ChangeStatus(Constants.JobStatus.Shutdown);
+            ChangeStatus(JobStatus.Shutdown);
             _logger.LogInformation($"{JobInformation.SystemName} Shutdown!");
             LogJobStatus("Job has been shutdown.");
 
@@ -176,13 +181,13 @@ namespace DashFire
 
         private async Task SendHeartBitAsync(TimeSpan delayTime = default(TimeSpan), CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (_registrationStatus != Constants.JobRegistrationStatus.Registered)
+            if (_registrationStatus != JobRegistrationStatus.Registered)
             {
                 await Task.Delay(TimeSpan.FromSeconds(3), cancellationToken);
                 return;
             }
 
-            if (_heartBitStatus == Constants.HeartBitStatus.Requested)
+            if (_heartBitStatus == HeartBitStatus.Requested)
             {
                 if (DateTime.Now.Ticks < _freshHeartBitExpirationTicks)
                 {
@@ -197,29 +202,29 @@ namespace DashFire
                     await Task.Delay(delayTime, cancellationToken);
             }
 
-            _heartBitStatus = Constants.HeartBitStatus.Requested;
+            _heartBitStatus = HeartBitStatus.Requested;
             _freshHeartBitExpirationTicks = DateTime.Now.AddMinutes(2).Ticks;
 
-            var heartBitModel = new Models.HeartBitModel()
+            var heartBitModel = new HeartBitModel()
             {
                 Key = Key,
                 InstanceId = InstanceId
             };
-            _queueManager.Publish(Constants.MessageTypes.HeartBit, JsonSerializer.Serialize(heartBitModel));
+            _queueManager.Publish(MessageTypes.HeartBit, JsonSerializer.Serialize(heartBitModel));
         }
 
         private async Task RegisterJobAsync()
         {
-            if (_registrationStatus == Constants.JobRegistrationStatus.Registered)
+            if (_registrationStatus == JobRegistrationStatus.Registered)
                 return;
 
-            ChangeStatus(Constants.JobStatus.Registering);
+            ChangeStatus(JobStatus.Registering);
 
-            var registrationModel = new Models.RegistrationModel()
+            var registrationModel = new RegistrationModel()
             {
                 Key = Key,
                 InstanceId = InstanceId,
-                Parameters = _jobContext.ServiceJobs.Single(x => x.Key == Key).Parameters.Select(x => new Models.JobParameterModel()
+                Parameters = _jobContext.ServiceJobs.Single(x => x.Key == Key).Parameters.Select(x => new JobParameterModel()
                 {
                     Description = x.Description,
                     DisplayName = x.DisplayName,
@@ -233,12 +238,12 @@ namespace DashFire
                 JobExecutionMode = JobExecutionMode,
                 OriginalInstanceId = _remoteExecutionRequest?.InstanceId
             };
-            _registrationStatus = Constants.JobRegistrationStatus.Registering;
+            _registrationStatus = JobRegistrationStatus.Registering;
             _cancellationTokenSource = new CancellationTokenSource();
 
             _logger.LogInformation($"Registering job {JobInformation.SystemName} ...");
 
-            _queueManager.Publish(Constants.MessageTypes.Registration, JsonSerializer.Serialize(registrationModel));
+            _queueManager.Publish(MessageTypes.Registration, JsonSerializer.Serialize(registrationModel));
 
             _logger.LogInformation($"Registeration is required for job {JobInformation.SystemName}");
 
@@ -267,7 +272,7 @@ namespace DashFire
             if (!JobInformation.RegistrationRequired)
                 return;
 
-            ChangeStatus(Constants.JobStatus.Synchronizing);
+            ChangeStatus(JobStatus.Synchronizing);
 
             do
             {
@@ -283,17 +288,17 @@ namespace DashFire
             if (_remoteExecutionRequest == null)
                 return;
 
-            if (_registrationStatus == Constants.JobRegistrationStatus.Registered)
+            if (_registrationStatus == JobRegistrationStatus.Registered)
             {
                 // Create new instance and execute the instance and wait for the result!
                 var currentJobContainer = _jobContext.Jobs.Where(x => x.Key == _remoteExecutionRequest.Key).Single();
-                var jobContainer = JobContainerHelper.BuildContainer(currentJobContainer.JobType, Constants.JobExecutionType.Service, Context.Instance.ServiceProvider);
+                var jobContainer = JobContainerHelper.BuildContainer(currentJobContainer.JobType, JobExecutionType.Service, Context.Instance.ServiceProvider);
                 var jobInstance = jobContainer.JobInstance as Job;
                 jobInstance.InstanceId = _remoteExecutionRequest.NewInstanceId;
-                jobInstance.JobExecutionMode = Constants.JobExecutionMode.ServerRequestedMode;
+                jobInstance.JobExecutionMode = JobExecutionMode.ServerRequestedMode;
                 jobInstance.JobInformation.RegistrationRequired = true;
                 var properties = currentJobContainer.JobType.GetProperties();
-                foreach(var newProperty in _remoteExecutionRequest.Parameters)
+                foreach (var newProperty in _remoteExecutionRequest.Parameters)
                 {
                     var property = properties.Where(x => x.Name == newProperty.ParameterName).Single();
                     ReflectionHelper.SetPropertyValue(jobInstance, newProperty.ParameterName, newProperty.Value);
@@ -322,22 +327,25 @@ namespace DashFire
             if (jobKey != Key && jobInstanceId != InstanceId)
                 return Task.CompletedTask;
 
-            if (messageType == Constants.MessageTypes.Registration.ToString().ToLower())
+            if (messageType == MessageTypes.Registration.ToString().ToLower())
             {
                 _logger.LogInformation($"Job {JobInformation.SystemName} registered successfully.");
                 LogJobStatus("Job has been registered successfully.");
 
-                _registrationStatus = Constants.JobRegistrationStatus.Registered;
+                _registrationStatus = JobRegistrationStatus.Registered;
+                if (_dashLogger != null)
+                    _dashLogger.Register(Key, InstanceId);
+
                 _cancellationTokenSource.Cancel();
             }
-            else if (messageType == Constants.MessageTypes.HeartBit.ToString().ToLower())
+            else if (messageType == MessageTypes.HeartBit.ToString().ToLower())
             {
                 _heartBitExpirationTicks = DateTime.Now.AddMinutes(1).Ticks;
-                _heartBitStatus = Constants.HeartBitStatus.Alive;
+                _heartBitStatus = HeartBitStatus.Alive;
             }
-            else if (messageType == Constants.MessageTypes.JobExecutionRequest.ToString().ToLower())
+            else if (messageType == MessageTypes.JobExecutionRequest.ToString().ToLower())
             {
-                var model = JsonSerializer.Deserialize<Models.JobExecutionRequestModel>(message);
+                var model = JsonSerializer.Deserialize<JobExecutionRequestModel>(message);
                 _remoteExecutionRequest = model;
             }
 
@@ -348,7 +356,7 @@ namespace DashFire
         {
             if (JobInformation.CronSchedules.Any() && !cancellationToken.IsCancellationRequested)
             {
-                ChangeStatus(Constants.JobStatus.Scheduled);
+                ChangeStatus(JobStatus.Scheduled);
 
                 NextExecutionDateTime = DateTime.MaxValue;
                 foreach (var cronExpression in JobInformation.CronSchedules)
@@ -364,16 +372,16 @@ namespace DashFire
                     _logger.LogInformation($"{JobInformation.SystemName} scheduled to execute at {NextExecutionDateTime}");
                     LogJobStatus($"Job has been scheduled to execute at {NextExecutionDateTime}.");
 
-                    if (_registrationStatus == Constants.JobRegistrationStatus.Registered)
+                    if (_registrationStatus == JobRegistrationStatus.Registered)
                     {
-                        var jobScheduleModel = new Models.JobScheduleModel()
+                        var jobScheduleModel = new JobScheduleModel()
                         {
                             Key = Key,
                             InstanceId = InstanceId,
                             NextExecutionDateTime = this.NextExecutionDateTime
                         };
 
-                        _queueManager.Publish(Constants.MessageTypes.JobSchedule, JsonSerializer.Serialize(jobScheduleModel));
+                        _queueManager.Publish(MessageTypes.JobSchedule, JsonSerializer.Serialize(jobScheduleModel));
                     }
 
                     await Task.Delay(sleepTime, cancellationToken);
@@ -381,50 +389,50 @@ namespace DashFire
             }
         }
 
-        private void ChangeStatus(Constants.JobStatus jobStatus)
+        private void ChangeStatus(JobStatus jobStatus)
         {
             _jobStatus = jobStatus;
 
-            if (_registrationStatus != Constants.JobRegistrationStatus.Registered)
+            if (_registrationStatus != JobRegistrationStatus.Registered)
                 return;
 
-            var statusModel = new Models.StatusModel()
+            var statusModel = new StatusModel()
             {
                 Key = Key,
                 InstanceId = InstanceId,
                 JobStatus = _jobStatus
             };
 
-            _queueManager.Publish(Constants.MessageTypes.JobStatus, JsonSerializer.Serialize(statusModel));
+            _queueManager.Publish(MessageTypes.JobStatus, JsonSerializer.Serialize(statusModel));
         }
 
         private void LogJobStatus(string message)
         {
-            if (_registrationStatus != Constants.JobRegistrationStatus.Registered)
+            if (_registrationStatus != JobRegistrationStatus.Registered)
                 return;
 
-            var statusModel = new Models.LogJobStatusModel()
+            var statusModel = new LogJobStatusModel()
             {
                 Key = Key,
                 InstanceId = InstanceId,
                 Message = message
             };
 
-            _queueManager.Publish(Constants.MessageTypes.LogJobStatus, JsonSerializer.Serialize(statusModel));
+            _queueManager.Publish(MessageTypes.LogJobStatus, JsonSerializer.Serialize(statusModel));
         }
 
         private void Shutdown()
         {
-            if (_registrationStatus != Constants.JobRegistrationStatus.Registered)
+            if (_registrationStatus != JobRegistrationStatus.Registered)
                 return;
 
-            var shutdownModel = new Models.ShutdownModel()
+            var shutdownModel = new ShutdownModel()
             {
                 Key = Key,
                 InstanceId = InstanceId
             };
 
-            _queueManager.Publish(Constants.MessageTypes.Shutdown, JsonSerializer.Serialize(shutdownModel));
+            _queueManager.Publish(MessageTypes.Shutdown, JsonSerializer.Serialize(shutdownModel));
         }
     }
 }

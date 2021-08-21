@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using DashFire.Framework.Constants;
 
 namespace DashFire
 {
@@ -38,7 +39,7 @@ namespace DashFire
         /// <summary>
         /// Job execution type
         /// </summary>
-        internal Constants.JobExecutionType ExecutionType
+        internal JobExecutionType ExecutionType
         {
             get;
             set;

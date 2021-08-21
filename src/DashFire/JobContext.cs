@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using DashFire.Framework.Constants;
 
 namespace DashFire
 {
@@ -17,9 +18,9 @@ namespace DashFire
 
         internal IEnumerable<JobContainer> Jobs => _jobs;
 
-        internal IEnumerable<JobContainer> ServiceJobs => _jobs.Where(x => x.ExecutionType == Constants.JobExecutionType.Service);
+        internal IEnumerable<JobContainer> ServiceJobs => _jobs.Where(x => x.ExecutionType == JobExecutionType.Service);
 
-        internal IEnumerable<JobContainer> RemoteJobs => _jobs.Where(x => x.ExecutionType == Constants.JobExecutionType.Remote);
+        internal IEnumerable<JobContainer> RemoteJobs => _jobs.Where(x => x.ExecutionType == JobExecutionType.Remote);
 
         /// <summary>
         /// Job context's constructor.
@@ -40,7 +41,7 @@ namespace DashFire
         {
             _logger.LogInformation($"Initializing { jobType.Name }");
 
-            _jobs.Add(JobContainerHelper.BuildContainer(jobType, Constants.JobExecutionType.Service, _serviceProvider));
+            _jobs.Add(JobContainerHelper.BuildContainer(jobType, JobExecutionType.Service, _serviceProvider));
         }
     }
 }

@@ -1,6 +1,6 @@
-﻿namespace DashFire.Models
+﻿namespace DashFire.Logger
 {
-    internal class StatusModel
+    internal class LogJobStatusModel
     {
         public string Key
         {
@@ -14,7 +14,7 @@
             set;
         }
 
-        public Constants.JobStatus JobStatus
+        public string Message
         {
             get;
             set;

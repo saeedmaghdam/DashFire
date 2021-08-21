@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using DashFire.Constants;
+using DashFire.Framework.Constants;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
-namespace DashFire
+namespace DashFire.Framework
 {
     /// <summary>
     /// Queue manager
@@ -52,7 +52,7 @@ namespace DashFire
             _channel = _connection.CreateModel();
         }
 
-        internal void Initialize(string jobKey, string jobInstanceId)
+        public void Initialize(string jobKey, string jobInstanceId)
         {
             // Declare dashboard exchanges and queue
             _channel.ExchangeDeclare(_serviceSideExchangeName, "headers", true);
@@ -154,7 +154,7 @@ namespace DashFire
             });
         }
 
-        internal void Publish(MessageTypes messageType, string message)
+        public void Publish(MessageTypes messageType, string message)
         {
             var properties = _channel.CreateBasicProperties();
             properties.Persistent = false;
@@ -168,7 +168,7 @@ namespace DashFire
             _channel.BasicPublish(_serviceSideExchangeName, "", properties, messageBodyBytes);
         }
 
-        internal void StartConsume(string jobKey, string jobInstanceId)
+        public void StartConsume(string jobKey, string jobInstanceId)
         {
             var consumer = new EventingBasicConsumer(_channel);
             consumer.Received += ConsumerReceived;
@@ -176,7 +176,7 @@ namespace DashFire
             _channel.BasicConsume($"{_dashboardSideExchangeName}_{jobKey}_{jobInstanceId}", true, consumer);
         }
 
-        internal void DeclareExchangeAndQueue(string jobKey, string jobInstanceId)
+        public void DeclareExchangeAndQueue(string jobKey, string jobInstanceId)
         {
             var dashboardSideQueueName = $"{_dashboardSideExchangeName}_{jobKey}_{jobInstanceId}";
             _channel.ExchangeDeclare(_dashboardSideExchangeName, "headers", true);
