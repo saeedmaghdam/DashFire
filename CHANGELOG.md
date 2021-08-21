@@ -1,8 +1,12 @@
 # ChangeLog
 All notable changes to this project will be documented in this file.
 
+## 0.2.0 - 2021-08-21
+### Added
+- Added IDashLogger service.
+- Added framework library.
 
-## 1.0.0 - 2021-07-27
+## 0.1.x - 2021-07-27
 ### Added
 - Initialized DashFire
 - Added Monitor to the project
