@@ -5,8 +5,17 @@ using System.Reflection;
 
 namespace DashFire.Utils
 {
+    /// <summary>
+    /// Reflection helper class.
+    /// </summary>
     public static class ReflectionHelper
     {
+        /// <summary>
+        /// Sets an object's property.
+        /// </summary>
+        /// <param name="inputObject">Object instance.</param>
+        /// <param name="propertyName">Property name.</param>
+        /// <param name="propertyVal">Property value.</param>
         public static void SetPropertyValue(object inputObject, string propertyName, object propertyVal)
         {
             //find out the type
@@ -31,6 +40,10 @@ namespace DashFire.Utils
 
         }
 
+        /// <summary>
+        /// Returns caller class name.
+        /// </summary>
+        /// <returns></returns>
         public static string NameOfCallingClass()
         {
             string fullName;
@@ -52,6 +65,11 @@ namespace DashFire.Utils
             return fullName;
         }
 
+        /// <summary>
+        /// Get all parent classes.
+        /// </summary>
+        /// <param name="type">Type</param>
+        /// <returns></returns>
         public static IEnumerable<Type> GetClassHierarchy(Type type)
         {
             while (type != null)

@@ -52,6 +52,11 @@ namespace DashFire.Framework
             _channel = _connection.CreateModel();
         }
 
+        /// <summary>
+        /// Initialize specified job related queue(s).
+        /// </summary>
+        /// <param name="jobKey">Job's key</param>
+        /// <param name="jobInstanceId">Job's instance id</param>
         public void Initialize(string jobKey, string jobInstanceId)
         {
             // Declare dashboard exchanges and queue
@@ -154,6 +159,11 @@ namespace DashFire.Framework
             });
         }
 
+        /// <summary>
+        /// Publish a message to a queue.
+        /// </summary>
+        /// <param name="messageType">Message type</param>
+        /// <param name="message">Message content</param>
         public void Publish(MessageTypes messageType, string message)
         {
             var properties = _channel.CreateBasicProperties();
@@ -168,6 +178,11 @@ namespace DashFire.Framework
             _channel.BasicPublish(_serviceSideExchangeName, "", properties, messageBodyBytes);
         }
 
+        /// <summary>
+        /// Start consuming specified job's queue.
+        /// </summary>
+        /// <param name="jobKey"></param>
+        /// <param name="jobInstanceId"></param>
         public void StartConsume(string jobKey, string jobInstanceId)
         {
             var consumer = new EventingBasicConsumer(_channel);
@@ -176,6 +191,11 @@ namespace DashFire.Framework
             _channel.BasicConsume($"{_dashboardSideExchangeName}_{jobKey}_{jobInstanceId}", true, consumer);
         }
 
+        /// <summary>
+        /// Declare exchange and related queue for a specified job.
+        /// </summary>
+        /// <param name="jobKey"></param>
+        /// <param name="jobInstanceId"></param>
         public void DeclareExchangeAndQueue(string jobKey, string jobInstanceId)
         {
             var dashboardSideQueueName = $"{_dashboardSideExchangeName}_{jobKey}_{jobInstanceId}";

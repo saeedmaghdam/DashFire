@@ -1,5 +1,8 @@
 ﻿namespace DashFire.Framework.Constants
 {
+    /// <summary>
+    /// Job execution type.
+    /// </summary>
     public enum JobExecutionType
     {
         /// <summary>
