@@ -1,8 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text.Json;
+using System.Threading;
+using System.Threading.Tasks;
 using DashFire.Framework;
 using DashFire.Framework.Constants;
 using DashFire.Utils;
+using Microsoft.Extensions.Logging;
 
 namespace DashFire.Logger
 {
@@ -11,6 +15,7 @@ namespace DashFire.Logger
     /// </summary>
     public class DashLogger : IDashLogger
     {
+        private readonly ILogger<DashLogger> _logger;
         private readonly QueueManager _queueManager;
 
         private Dictionary<string, bool> _registeredJobs = new Dictionary<string, bool>();
@@ -18,7 +23,7 @@ namespace DashFire.Logger
         /// <summary>
         /// Constructor of DashLogger.
         /// </summary>
-        public DashLogger(QueueManager queueManager)
+        public DashLogger(ILogger<DashLogger> _logger, QueueManager queueManager)
         {
             _queueManager = queueManager;
         }
@@ -29,7 +34,8 @@ namespace DashFire.Logger
         /// <param name="key">Job's Key</param>
         /// <param name="instanceId">Job's instance id</param>
         /// <param name="message">Log message content</param>
-        public void Log(string key, string instanceId, string message)
+        /// <param name="cancellationToken">Cancellation token</param>
+        public async Task LogAsync(string key, string instanceId, string message, CancellationToken cancellationToken)
         {
             if (!_registeredJobs.ContainsKey($"{key}_{instanceId}"))
                 return;
@@ -41,7 +47,23 @@ namespace DashFire.Logger
                 Message = message
             };
 
-            _queueManager.Publish(MessageTypes.LogJobStatus, JsonSerializer.Serialize(statusModel));
+            int remainingAttempts = 3;
+            do
+            {
+                try
+                {
+                    _queueManager.Publish(MessageTypes.LogJobStatus, JsonSerializer.Serialize(statusModel));
+
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.Message);
+                    remainingAttempts--;
+
+                    await Task.Delay(100, cancellationToken);
+                }
+            } while (remainingAttempts != 0);
         }
 
         /// <summary>

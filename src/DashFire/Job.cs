@@ -90,23 +90,25 @@ namespace DashFire
         internal async Task StartAsync(CancellationToken cancellationToken)
         {
             _queueManager.Received += _queueManager_Received;
-            _queueManager.StartConsume(Key, InstanceId);
+            await _queueManager.StartConsume(Key, InstanceId, cancellationToken);
 
             InitializeHeartBitAsync(cancellationToken);
 
             do
             {
-                await RegisterJobAsync();
-                await CheckServerAvailability();
+                await RegisterJobAsync(cancellationToken);
+                await CheckServerAvailabilityAsync(cancellationToken);
                 await ExecuteRequestAsync(cancellationToken);
 
-                ChangeStatus(JobStatus.Running);
+                await ChangeStatusAsync(JobStatus.Running, cancellationToken);
+
                 _logger.LogInformation($"{JobInformation.SystemName} Started.");
-                LogJobStatus("Job is running.");
+                await LogJobStatusAsync("Job is running.", cancellationToken);
                 await StartInternallyAsync(cancellationToken);
                 _logger.LogInformation($"{JobInformation.SystemName} Finished.");
-                LogJobStatus("Job has been finished.");
-                ChangeStatus(JobStatus.Idle);
+
+                await LogJobStatusAsync("Job has been finished.", cancellationToken);
+                await ChangeStatusAsync(JobStatus.Idle, cancellationToken);
 
                 if (JobExecutionMode != JobExecutionMode.ServiceMode)
                     break;
@@ -129,7 +131,7 @@ namespace DashFire
         internal async Task StopAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation($"{JobInformation.SystemName} Stoped!");
-            LogJobStatus("Job has been stopped.");
+            await LogJobStatusAsync("Job has been stopped.", cancellationToken);
 
             await StopInternallyAsync(cancellationToken);
         }
@@ -151,13 +153,14 @@ namespace DashFire
         /// <returns>Returns a task.</returns>
         internal async Task ShutdownAsync(CancellationToken cancellationToken)
         {
-            ChangeStatus(JobStatus.Shutdown);
+            await ChangeStatusAsync(JobStatus.Shutdown, cancellationToken);
+
             _logger.LogInformation($"{JobInformation.SystemName} Shutdown!");
-            LogJobStatus("Job has been shutdown.");
+            await LogJobStatusAsync("Job has been shutdown.", cancellationToken);
 
             await ShutdownInternallyAsync(cancellationToken);
 
-            Shutdown();
+            await ShutdownRequestAsync(cancellationToken);
         }
 
         /// <summary>
@@ -210,15 +213,31 @@ namespace DashFire
                 Key = Key,
                 InstanceId = InstanceId
             };
-            _queueManager.Publish(MessageTypes.HeartBit, JsonSerializer.Serialize(heartBitModel));
+
+            int remainingAttempts = 3;
+            do
+            {
+                try
+                {
+                    _queueManager.Publish(MessageTypes.HeartBit, JsonSerializer.Serialize(heartBitModel));
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.Message);
+                    remainingAttempts--;
+
+                    await Task.Delay(100, cancellationToken);
+                }
+            } while (remainingAttempts != 0);
         }
 
-        private async Task RegisterJobAsync()
+        private async Task RegisterJobAsync(CancellationToken cancellationToken)
         {
             if (_registrationStatus == JobRegistrationStatus.Registered)
                 return;
 
-            ChangeStatus(JobStatus.Registering);
+            await ChangeStatusAsync(JobStatus.Registering, cancellationToken);
 
             var registrationModel = new RegistrationModel()
             {
@@ -243,7 +262,22 @@ namespace DashFire
 
             _logger.LogInformation($"Registering job {JobInformation.SystemName} ...");
 
-            _queueManager.Publish(MessageTypes.Registration, JsonSerializer.Serialize(registrationModel));
+            int remainingAttempts = 3;
+            do
+            {
+                try
+                {
+                    _queueManager.Publish(MessageTypes.Registration, JsonSerializer.Serialize(registrationModel));
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.Message);
+                    remainingAttempts--;
+
+                    await Task.Delay(100, cancellationToken);
+                }
+            } while (remainingAttempts != 0);
 
             _logger.LogInformation($"Registeration is required for job {JobInformation.SystemName}");
 
@@ -264,7 +298,7 @@ namespace DashFire
             _heartBitExpirationTicks = DateTime.Now.AddMinutes(1).Ticks;
         }
 
-        private async Task CheckServerAvailability()
+        private async Task CheckServerAvailabilityAsync(CancellationToken cancellationToken)
         {
             var isServerAlive = await IsServerAlive();
             if (isServerAlive)
@@ -272,7 +306,7 @@ namespace DashFire
             if (!JobInformation.RegistrationRequired)
                 return;
 
-            ChangeStatus(JobStatus.Synchronizing);
+            await ChangeStatusAsync(JobStatus.Synchronizing, cancellationToken);
 
             do
             {
@@ -322,15 +356,15 @@ namespace DashFire
             return Task.FromResult(false);
         }
 
-        private Task _queueManager_Received(string jobKey, string jobInstanceId, string messageType, string message)
+        private async Task _queueManager_Received(string jobKey, string jobInstanceId, string messageType, string message, CancellationToken cancellationToken)
         {
             if (jobKey != Key && jobInstanceId != InstanceId)
-                return Task.CompletedTask;
+                return;
 
             if (messageType == MessageTypes.Registration.ToString().ToLower())
             {
                 _logger.LogInformation($"Job {JobInformation.SystemName} registered successfully.");
-                LogJobStatus("Job has been registered successfully.");
+                await LogJobStatusAsync("Job has been registered successfully.", cancellationToken);
 
                 _registrationStatus = JobRegistrationStatus.Registered;
                 if (_dashLogger != null)
@@ -348,15 +382,13 @@ namespace DashFire
                 var model = JsonSerializer.Deserialize<JobExecutionRequestModel>(message);
                 _remoteExecutionRequest = model;
             }
-
-            return Task.CompletedTask;
         }
 
         private async Task ScheduleAsync(CancellationToken cancellationToken)
         {
             if (JobInformation.CronSchedules.Any() && !cancellationToken.IsCancellationRequested)
             {
-                ChangeStatus(JobStatus.Scheduled);
+                await ChangeStatusAsync(JobStatus.Scheduled, cancellationToken);
 
                 NextExecutionDateTime = DateTime.MaxValue;
                 foreach (var cronExpression in JobInformation.CronSchedules)
@@ -370,7 +402,7 @@ namespace DashFire
                 if (sleepTime.TotalSeconds > 0)
                 {
                     _logger.LogInformation($"{JobInformation.SystemName} scheduled to execute at {NextExecutionDateTime}");
-                    LogJobStatus($"Job has been scheduled to execute at {NextExecutionDateTime}.");
+                    await LogJobStatusAsync($"Job has been scheduled to execute at {NextExecutionDateTime}.", cancellationToken);
 
                     if (_registrationStatus == JobRegistrationStatus.Registered)
                     {
@@ -381,7 +413,22 @@ namespace DashFire
                             NextExecutionDateTime = this.NextExecutionDateTime
                         };
 
-                        _queueManager.Publish(MessageTypes.JobSchedule, JsonSerializer.Serialize(jobScheduleModel));
+                        int remainingAttempts = 3;
+                        do
+                        {
+                            try
+                            {
+                                _queueManager.Publish(MessageTypes.JobSchedule, JsonSerializer.Serialize(jobScheduleModel));
+                                break;
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogError(ex.Message);
+                                remainingAttempts--;
+
+                                await Task.Delay(100, cancellationToken);
+                            }
+                        } while (remainingAttempts != 0);
                     }
 
                     await Task.Delay(sleepTime, cancellationToken);
@@ -389,7 +436,7 @@ namespace DashFire
             }
         }
 
-        private void ChangeStatus(JobStatus jobStatus)
+        private async Task ChangeStatusAsync(JobStatus jobStatus, CancellationToken cancellationToken)
         {
             _jobStatus = jobStatus;
 
@@ -403,10 +450,26 @@ namespace DashFire
                 JobStatus = _jobStatus
             };
 
-            _queueManager.Publish(MessageTypes.JobStatus, JsonSerializer.Serialize(statusModel));
+            int remainingAttempts = 3;
+            do
+            {
+                try
+                {
+                    _queueManager.Publish(MessageTypes.JobStatus, JsonSerializer.Serialize(statusModel));
+
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.Message);
+                    remainingAttempts--;
+
+                    await Task.Delay(100, cancellationToken);
+                }
+            } while (remainingAttempts != 0);
         }
 
-        private void LogJobStatus(string message)
+        private async Task LogJobStatusAsync(string message, CancellationToken cancellationToken)
         {
             if (_registrationStatus != JobRegistrationStatus.Registered)
                 return;
@@ -418,10 +481,25 @@ namespace DashFire
                 Message = message
             };
 
-            _queueManager.Publish(MessageTypes.LogJobStatus, JsonSerializer.Serialize(statusModel));
+            int remainingAttempts = 3;
+            do
+            {
+                try
+                {
+                    _queueManager.Publish(MessageTypes.LogJobStatus, JsonSerializer.Serialize(statusModel));
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.Message);
+                    remainingAttempts--;
+
+                    await Task.Delay(100, cancellationToken);
+                }
+            } while (remainingAttempts != 0);
         }
 
-        private void Shutdown()
+        private async Task ShutdownRequestAsync(CancellationToken cancellationToken)
         {
             if (_registrationStatus != JobRegistrationStatus.Registered)
                 return;
@@ -432,7 +510,22 @@ namespace DashFire
                 InstanceId = InstanceId
             };
 
-            _queueManager.Publish(MessageTypes.Shutdown, JsonSerializer.Serialize(shutdownModel));
+            int remainingAttempts = 3;
+            do
+            {
+                try
+                {
+                    _queueManager.Publish(MessageTypes.Shutdown, JsonSerializer.Serialize(shutdownModel));
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.Message);
+                    remainingAttempts--;
+
+                    await Task.Delay(100, cancellationToken);
+                }
+            } while (remainingAttempts != 0);
         }
     }
 }
