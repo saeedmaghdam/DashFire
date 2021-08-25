@@ -1,6 +1,10 @@
 # ChangeLog
 All notable changes to this project will be documented in this file.
 
+## 0.2.1 - 2021-08-26
+### Changed
+- Improved publishing to rabbit queue.
+
 ## 0.2.0 - 2021-08-21
 ### Added
 - Added IDashLogger service.

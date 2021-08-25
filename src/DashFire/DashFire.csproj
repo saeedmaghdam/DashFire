@@ -6,7 +6,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <CodeAnalysisRuleSet>../../build/Analyzers.ruleset</CodeAnalysisRuleSet>
     <WarningsAsErrors>;NU1605;CS1591;CS1573;CS0628;CS0429;CS0105;</WarningsAsErrors>
-    <Version>0.2.0-beta</Version>
+    <Version>0.2.1-beta</Version>
     <Authors>Saeed Aghdam</Authors>
     <Company>DashFire</Company>
     <Description>DashFire is a totally free and open-source task scheduler library. DashFire handles the communications with server, schedules the jobs, logs the messages, etc.</Description>

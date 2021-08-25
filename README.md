@@ -19,7 +19,7 @@ To install DashFire in Visual Studio's Package Manager Console:
 
 ```sh
 
-Install-Package DashFire -Version 0.2.0-beta
+Install-Package DashFire -Version 0.2.1-beta
 
 ```
 
@@ -27,7 +27,7 @@ To install in a specific project use:
 
 ```sh
 
-Install-Package DashFire -Version 0.2.0-beta -ProjectName Your_Project_Name
+Install-Package DashFire -Version 0.2.1-beta -ProjectName Your_Project_Name
 
 ```
 
@@ -120,6 +120,7 @@ Now you can run the app and it's do the rest!
 	* Added DashFire.Logger library
 		* Added IDashLogger.
 		* Added framework library and used in DashFire.
+  * Improved publishing to rabbit queue.
 
 ## Meta
 Saeed Aghdam – [Linkedin][linkedin]
